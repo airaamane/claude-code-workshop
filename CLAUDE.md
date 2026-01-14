@@ -61,3 +61,35 @@ Pre-approved bash commands (configured in `.claude/settings.local.json`):
 - `typescript-language-server *` - LSP operations
 - `tsc *` - TypeScript compilation
 - `npm install *` - Package installation
+
+## Custom Statusline
+
+This repository includes a custom statusline configuration (`.claude/statusline.ps1`) that displays:
+- Current model name (Sonnet, Opus, etc.)
+- Context window usage percentage with warnings (!! at 60%, !!! at 80%)
+- Session cost in USD (tracks cumulative API costs)
+- Current directory name
+- Git branch (if in a repo)
+
+**Example output:**
+```
+[Sonnet] Context: 28% | Cost: $0.0234 | [claude-code-prep] | main
+```
+
+### Setup on Windows (PowerShell)
+
+To use this statusline on your machine, add the following to your `~/.claude/settings.json`:
+
+```json
+{
+  "statusLine": {
+    "type": "command",
+    "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File <REPO_PATH>\\.claude\\statusline.ps1",
+    "padding": 0
+  }
+}
+```
+
+Replace `<REPO_PATH>` with the absolute path to this repository (e.g., `C:\\Users\\username\\Documents\\claude-code-prep`).
+
+**Note:** Restart Claude Code after updating settings for changes to take effect.
