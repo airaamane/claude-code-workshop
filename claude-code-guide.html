@@ -1,0 +1,1705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Code: Complete Operational Manual</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Cormorant+Garamond:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0e14;
+            --bg-secondary: #1a1f29;
+            --bg-tertiary: #252b37;
+            --text-primary: #e6e8eb;
+            --text-secondary: #a0a6b1;
+            --text-tertiary: #6b7280;
+            --accent-cyan: #00d4ff;
+            --accent-amber: #ffb454;
+            --accent-green: #39ff14;
+            --accent-red: #ff4757;
+            --border-color: #2a3142;
+            --glow-cyan: rgba(0, 212, 255, 0.3);
+            --glow-amber: rgba(255, 180, 84, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @keyframes noise {
+            0%, 100% { transform: translate(0, 0); }
+            10% { transform: translate(-5%, -5%); }
+            20% { transform: translate(-10%, 5%); }
+            30% { transform: translate(5%, -10%); }
+            40% { transform: translate(-5%, 15%); }
+            50% { transform: translate(-10%, 5%); }
+            60% { transform: translate(15%, 0); }
+            70% { transform: translate(0, 10%); }
+            80% { transform: translate(-15%, 0); }
+            90% { transform: translate(10%, 5%); }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes glitch {
+            0% { text-shadow: 2px 2px var(--accent-cyan), -2px -2px var(--accent-amber); }
+            25% { text-shadow: -2px 2px var(--accent-amber), 2px -2px var(--accent-cyan); }
+            50% { text-shadow: 2px -2px var(--accent-cyan), -2px 2px var(--accent-amber); }
+            75% { text-shadow: -2px -2px var(--accent-amber), 2px 2px var(--accent-cyan); }
+            100% { text-shadow: 2px 2px var(--accent-cyan), -2px -2px var(--accent-amber); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        body {
+            font-family: 'Cormorant Garamond', serif;
+            line-height: 1.7;
+            color: var(--text-primary);
+            background: var(--bg-primary);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background-image:
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 212, 255, 0.03) 2px, rgba(0, 212, 255, 0.03) 4px),
+                repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(255, 180, 84, 0.03) 2px, rgba(255, 180, 84, 0.03) 4px);
+            animation: noise 0.2s infinite;
+            pointer-events: none;
+            opacity: 0.5;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        header {
+            padding: 100px 40px 80px;
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+            border-bottom: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                radial-gradient(circle at 20% 50%, var(--glow-cyan), transparent 50%),
+                radial-gradient(circle at 80% 50%, var(--glow-amber), transparent 50%);
+            opacity: 0.1;
+            pointer-events: none;
+        }
+
+        header h1 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: clamp(2.5rem, 5vw, 4.5rem);
+            font-weight: 700;
+            margin-bottom: 20px;
+            letter-spacing: -0.02em;
+            position: relative;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        header h1::before {
+            content: '> ';
+            color: var(--accent-green);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        header h1 span {
+            background: linear-gradient(135deg, var(--accent-cyan) 0%, var(--accent-amber) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        header p {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            max-width: 700px;
+            margin: 0 auto;
+            animation: fadeInUp 0.8s ease-out 0.2s backwards;
+            letter-spacing: 0.01em;
+        }
+
+        nav {
+            background: var(--bg-secondary);
+            padding: 30px 40px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        nav a {
+            font-family: 'JetBrains Mono', monospace;
+            padding: 10px 20px;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.85rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        nav a::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, var(--glow-cyan), transparent);
+            transition: left 0.5s ease;
+        }
+
+        nav a:hover::before {
+            left: 100%;
+        }
+
+        nav a:hover {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+            box-shadow: 0 0 20px var(--glow-cyan);
+            transform: translateY(-2px);
+        }
+
+        main {
+            padding: 80px 40px;
+            background: var(--bg-primary);
+        }
+
+        section {
+            margin-bottom: 120px;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        section h2 {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-primary);
+            font-size: clamp(2rem, 4vw, 3rem);
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--border-color);
+            position: relative;
+            letter-spacing: -0.01em;
+        }
+
+        section h2::before {
+            content: '## ';
+            color: var(--accent-amber);
+            font-weight: 400;
+        }
+
+        section h2::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100px;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-amber));
+        }
+
+        section h3 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.4rem;
+            color: var(--text-secondary);
+            margin: 50px 0 25px;
+            letter-spacing: -0.01em;
+        }
+
+        section h3::before {
+            content: '### ';
+            color: var(--accent-green);
+            opacity: 0.7;
+        }
+
+        .tool-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+            margin-top: 40px;
+        }
+
+        .tool-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-left: 3px solid var(--accent-cyan);
+            padding: 30px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tool-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--glow-cyan), transparent);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .tool-card:hover::before {
+            opacity: 0.05;
+        }
+
+        .tool-card:hover {
+            border-left-color: var(--accent-amber);
+            transform: translateX(5px);
+            box-shadow: -5px 5px 30px rgba(0, 212, 255, 0.1);
+        }
+
+        .tool-card h3 {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent-cyan);
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .tool-card h3::before {
+            content: '';
+        }
+
+        .tool-card p {
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+            font-size: 1.05rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .tool-card p strong {
+            color: var(--accent-amber);
+            font-weight: 600;
+        }
+
+        .tool-card .usage {
+            background: var(--bg-tertiary);
+            padding: 15px;
+            border-left: 2px solid var(--accent-green);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            color: var(--accent-green);
+            margin-top: 15px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .agent-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-left: 3px solid var(--accent-amber);
+            padding: 30px;
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .agent-card:hover {
+            border-left-color: var(--accent-cyan);
+            transform: translateX(5px);
+            box-shadow: -5px 5px 30px rgba(255, 180, 84, 0.1);
+        }
+
+        .agent-card h3 {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent-amber);
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .agent-card h3::before {
+            content: '';
+        }
+
+        .agent-card p {
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            font-size: 1.05rem;
+        }
+
+        .agent-card p strong {
+            color: var(--accent-cyan);
+        }
+
+        .agent-card .tools {
+            background: var(--bg-tertiary);
+            padding: 15px;
+            border-left: 2px solid var(--accent-green);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--text-tertiary);
+            margin-top: 15px;
+        }
+
+        .best-practices {
+            background: var(--bg-secondary);
+            border-left: 3px solid var(--accent-green);
+            padding: 30px;
+            margin: 30px 0;
+            border: 1px solid var(--border-color);
+        }
+
+        .best-practices h3 {
+            color: var(--accent-green);
+            margin-bottom: 20px;
+            margin-top: 0;
+        }
+
+        .best-practices ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .best-practices li {
+            padding: 12px 0;
+            padding-left: 30px;
+            position: relative;
+            color: var(--text-secondary);
+            font-size: 1.05rem;
+        }
+
+        .best-practices li::before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: var(--accent-green);
+            font-weight: bold;
+        }
+
+        .example-box {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            padding: 25px;
+            margin: 25px 0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        .example-box strong {
+            color: var(--accent-cyan);
+            display: block;
+            margin-top: 15px;
+            margin-bottom: 5px;
+        }
+
+        .workflow-section {
+            background: var(--bg-secondary);
+            border-left: 3px solid var(--accent-amber);
+            padding: 30px;
+            margin: 30px 0;
+            border: 1px solid var(--border-color);
+        }
+
+        .workflow-section h3 {
+            color: var(--accent-amber);
+            margin-bottom: 20px;
+            margin-top: 0;
+        }
+
+        .workflow-steps {
+            list-style: decimal;
+            margin-left: 25px;
+            color: var(--text-secondary);
+        }
+
+        .workflow-steps li {
+            margin-bottom: 15px;
+            font-size: 1.05rem;
+            padding-left: 10px;
+        }
+
+        .workflow-steps li strong {
+            color: var(--accent-cyan);
+        }
+
+        .tip {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.05), rgba(57, 255, 20, 0.05));
+            border-left: 3px solid var(--accent-cyan);
+            padding: 20px 25px;
+            margin: 25px 0;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tip::before {
+            content: '💡';
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 2rem;
+            opacity: 0.3;
+        }
+
+        .tip strong {
+            color: var(--accent-cyan);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .command-list {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            padding: 30px;
+            margin: 25px 0;
+        }
+
+        .command-item {
+            margin-bottom: 25px;
+            padding-bottom: 25px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .command-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .command-item code {
+            display: inline-block;
+            background: var(--bg-tertiary);
+            color: var(--accent-amber);
+            padding: 8px 16px;
+            font-family: 'JetBrains Mono', monospace;
+            margin-right: 15px;
+            border: 1px solid var(--border-color);
+            font-size: 0.95rem;
+        }
+
+        .command-item p {
+            color: var(--text-secondary);
+            margin-top: 10px;
+            font-size: 1.05rem;
+        }
+
+        footer {
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            padding: 40px;
+            text-align: center;
+            color: var(--text-tertiary);
+        }
+
+        footer p {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+        }
+
+        footer code {
+            color: var(--accent-green);
+            background: var(--bg-tertiary);
+            padding: 2px 8px;
+            border-radius: 2px;
+        }
+
+        .highlight {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(255, 180, 84, 0.2));
+            padding: 2px 6px;
+            color: var(--accent-amber);
+            font-weight: 600;
+            border-radius: 2px;
+        }
+
+        code {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent-green);
+            background: var(--bg-tertiary);
+            padding: 2px 6px;
+            font-size: 0.9em;
+            border: 1px solid var(--border-color);
+        }
+
+        /* Scroll animations */
+        @media (prefers-reduced-motion: no-preference) {
+            .tool-card {
+                animation: slideInRight 0.6s ease-out backwards;
+            }
+
+            .tool-card:nth-child(1) { animation-delay: 0.1s; }
+            .tool-card:nth-child(2) { animation-delay: 0.2s; }
+            .tool-card:nth-child(3) { animation-delay: 0.3s; }
+            .tool-card:nth-child(4) { animation-delay: 0.4s; }
+            .tool-card:nth-child(5) { animation-delay: 0.5s; }
+            .tool-card:nth-child(6) { animation-delay: 0.6s; }
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 12px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-cyan);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><span>CLAUDE CODE</span></h1>
+            <p>Complete operational manual for AI-assisted software engineering</p>
+        </header>
+
+        <nav>
+            <a href="#tools">Core Tools</a>
+            <a href="#agents">Subagents</a>
+            <a href="#skills">Skills</a>
+            <a href="#lsp">LSP</a>
+            <a href="#memory">Memory</a>
+            <a href="#slash-commands">Commands</a>
+            <a href="#hooks">Hooks</a>
+            <a href="#workflows">Workflows</a>
+            <a href="#best-practices">Best Practices</a>
+            <a href="#quick-reference">Quick Reference</a>
+        </nav>
+
+        <main>
+            <!-- CORE TOOLS SECTION -->
+            <section id="tools">
+                <h2>Core Tools</h2>
+
+                <h3>File Operations</h3>
+                <div class="tool-grid">
+                    <div class="tool-card">
+                        <h3>📖 Read</h3>
+                        <p>Read files from the filesystem. Perfect for understanding existing code before making changes.</p>
+                        <p><strong>Use when:</strong> You need to examine code, check configurations, or understand file contents before editing.</p>
+                        <div class="usage">Read(file_path)</div>
+                    </div>
+
+                    <div class="tool-card">
+                        <h3>✏️ Edit</h3>
+                        <p>Make precise edits to existing files using exact string replacement.</p>
+                        <p><strong>Use when:</strong> You need to modify specific parts of a file.</p>
+                        <div class="usage">Edit(file_path, old_string, new_string)</div>
+                    </div>
+
+                    <div class="tool-card">
+                        <h3>📝 Write</h3>
+                        <p>Create or overwrite files. Always read first if the file exists.</p>
+                        <p><strong>Use when:</strong> Creating new files or completely replacing content.</p>
+                        <div class="usage">Write(file_path, content)</div>
+                    </div>
+                </div>
+
+                <h3>Search & Exploration</h3>
+                <div class="tool-grid">
+                    <div class="tool-card">
+                        <h3>🔍 Glob</h3>
+                        <p>Fast file pattern matching using glob patterns.</p>
+                        <p><strong>Use when:</strong> Finding files by name or extension (e.g., "*.js", "src/**/*.tsx")</p>
+                        <div class="usage">Glob(pattern, path)</div>
+                    </div>
+
+                    <div class="tool-card">
+                        <h3>🔎 Grep</h3>
+                        <p>Powerful regex-based content search across files.</p>
+                        <p><strong>Use when:</strong> Searching for specific code, patterns, or keywords in files.</p>
+                        <div class="usage">Grep(pattern, path, options)</div>
+                    </div>
+
+                    <div class="tool-card">
+                        <h3>🗂️ Glob Multiple</h3>
+                        <p>Run multiple glob searches in parallel for efficiency.</p>
+                        <p><strong>Use when:</strong> Looking for different file types simultaneously.</p>
+                        <div class="usage">Multiple parallel Glob calls</div>
+                    </div>
+                </div>
+
+                <h3>Command & Shell</h3>
+                <div class="tool-grid">
+                    <div class="tool-card">
+                        <h3>💻 Bash</h3>
+                        <p>Execute bash commands with persistent shell sessions.</p>
+                        <p><strong>Use when:</strong> Running git commands, npm scripts, tests, builds, or system operations.</p>
+                        <div class="usage">Bash(command, timeout)</div>
+                    </div>
+
+                    <div class="tool-card">
+                        <h3>🔄 Task Output</h3>
+                        <p>Retrieve output from running or completed background tasks.</p>
+                        <p><strong>Use when:</strong> Checking on long-running operations.</p>
+                        <div class="usage">TaskOutput(task_id, block, timeout)</div>
+                    </div>
+                </div>
+
+                <h3>Task Management</h3>
+                <div class="tool-grid">
+                    <div class="tool-card">
+                        <h3>✅ TodoWrite</h3>
+                        <p>Create and manage structured task lists for complex projects.</p>
+                        <p><strong>Use when:</strong> Planning multi-step tasks or tracking progress.</p>
+                        <div class="usage">TodoWrite(todos: [{content, activeForm, status}])</div>
+                    </div>
+
+                    <div class="tool-card">
+                        <h3>❓ Ask User Question</h3>
+                        <p>Ask users questions to clarify requirements or gather input.</p>
+                        <p><strong>Use when:</strong> Need user decisions or preferences before proceeding.</p>
+                        <div class="usage">AskUserQuestion(questions: [{question, header, options}])</div>
+                    </div>
+                </div>
+
+                <h3>Advanced Features</h3>
+                <div class="tool-grid">
+                    <div class="tool-card">
+                        <h3>🎯 Task (Subagents)</h3>
+                        <p>Launch specialized agents to handle complex, multi-step tasks autonomously.</p>
+                        <p><strong>Use when:</strong> Complex tasks that need specialized handling.</p>
+                        <div class="usage">Task(description, prompt, subagent_type)</div>
+                    </div>
+
+                    <div class="tool-card">
+                        <h3>🗓️ Plan Mode</h3>
+                        <p>Enter planning mode to design implementation approach before coding.</p>
+                        <p><strong>Use when:</strong> New features, architectural decisions, or unclear requirements.</p>
+                        <div class="usage">EnterPlanMode() → ExitPlanMode()</div>
+                    </div>
+
+                    <div class="tool-card">
+                        <h3>🌐 Web Tools</h3>
+                        <p>Fetch web content, search the web, and analyze URLs.</p>
+                        <p><strong>Use when:</strong> Need current information, documentation, or web content.</p>
+                        <div class="usage">WebFetch(url, prompt) / WebSearch(query)</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SUBAGENTS SECTION -->
+            <section id="agents">
+                <h2>Subagents</h2>
+                <p style="margin-bottom: 30px; color: var(--text-secondary); font-size: 1.1rem;">Specialized agents that handle complex tasks autonomously. Launch them with the Task tool.</p>
+
+                <div class="agent-card">
+                    <h3>⚙️ Bash Agent</h3>
+                    <p>Command execution specialist for terminal operations.</p>
+                    <p><strong>Best for:</strong> Git operations, npm commands, system tasks, complex shell operations.</p>
+                    <p><strong>Example use:</strong> Running a complex build pipeline with multiple steps.</p>
+                    <div class="tools">Available tools: Bash</div>
+                </div>
+
+                <div class="agent-card">
+                    <h3>🔍 Explore Agent</h3>
+                    <p>Fast agent specialized for codebase exploration and analysis.</p>
+                    <p><strong>Best for:</strong> Understanding codebase structure, finding patterns, answering "how does X work?" questions.</p>
+                    <p><strong>Example use:</strong> "Where are API endpoints defined?" or "How does authentication work?"</p>
+                    <div class="tools">Available tools: All exploration tools</div>
+                </div>
+
+                <div class="agent-card">
+                    <h3>📋 Plan Agent</h3>
+                    <p>Software architect for designing implementation strategies.</p>
+                    <p><strong>Best for:</strong> Planning complex features, architectural decisions, identifying critical files.</p>
+                    <p><strong>Example use:</strong> Design a caching strategy before implementation.</p>
+                    <div class="tools">Available tools: All tools</div>
+                </div>
+
+                <div class="agent-card">
+                    <h3>💬 General Purpose Agent</h3>
+                    <p>Multi-purpose agent for researching, searching, and executing tasks.</p>
+                    <p><strong>Best for:</strong> Complex research, multi-step investigations, flexible task execution.</p>
+                    <p><strong>Example use:</strong> Investigating a bug across multiple files.</p>
+                    <div class="tools">Available tools: All tools</div>
+                </div>
+
+                <div class="agent-card">
+                    <h3>📚 Claude Code Guide Agent</h3>
+                    <p>Specialist in Claude Code features, CLI tools, and API usage.</p>
+                    <p><strong>Best for:</strong> Questions about Claude Code itself, features, hooks, commands.</p>
+                    <p><strong>Example use:</strong> "How do I configure Claude Code?" or "What are the available hooks?"</p>
+                    <div class="tools">Available tools: Glob, Grep, Read, WebFetch, WebSearch</div>
+                </div>
+
+                <div class="agent-card">
+                    <h3>⚙️ Statusline Setup Agent</h3>
+                    <p>Configuration specialist for Claude Code status line settings.</p>
+                    <p><strong>Best for:</strong> Configuring status line display and settings.</p>
+                    <div class="tools">Available tools: Read, Edit</div>
+                </div>
+            </section>
+
+            <!-- SKILLS SECTION -->
+            <section id="skills">
+                <h2>Skills</h2>
+                <p style="margin-bottom: 30px; color: var(--text-secondary); font-size: 1.1rem;">Skills are specialized capabilities that perform domain-specific tasks. Invoke them by referencing their name or using them in commands.</p>
+
+                <div class="agent-card" style="border-left-color: var(--accent-green);">
+                    <h3 style="color: var(--accent-green);">💾 Commit</h3>
+                    <p>Intelligently create and manage git commits.</p>
+                    <p><strong>Best for:</strong> Creating well-organized commits with proper messages, handling pre-commit hooks, staging changes intelligently.</p>
+                    <p><strong>How to invoke:</strong> Use the Skill tool or reference <code>/commit</code> in commands</p>
+                    <p><strong>Example:</strong> After making code changes, use this skill to create a properly formatted commit with context-aware messages.</p>
+                    <div class="tools">Capabilities: Git operations, commit message generation, change staging</div>
+                </div>
+
+                <div class="agent-card" style="border-left-color: var(--accent-green);">
+                    <h3 style="color: var(--accent-green);">📋 Review PR</h3>
+                    <p>Analyze and provide comprehensive pull request reviews.</p>
+                    <p><strong>Best for:</strong> Code quality reviews, identifying potential issues, suggesting improvements, checking for bugs and best practices.</p>
+                    <p><strong>How to invoke:</strong> Use the Skill tool with PR information or reference <code>/review-pr</code></p>
+                    <p><strong>Example:</strong> Pass a PR number or branch information to get an automated review with specific recommendations.</p>
+                    <div class="tools">Capabilities: Code analysis, quality checks, suggestions, issue identification</div>
+                </div>
+
+                <div class="agent-card" style="border-left-color: var(--accent-green);">
+                    <h3 style="color: var(--accent-green);">📄 PDF</h3>
+                    <p>Generate, process, and manage PDF documents.</p>
+                    <p><strong>Best for:</strong> Creating documentation, generating reports, converting content to PDF format.</p>
+                    <p><strong>How to invoke:</strong> Use the Skill tool with <code>/pdf</code> command</p>
+                    <p><strong>Example:</strong> Generate a PDF report of code analysis, documentation, or project specifications.</p>
+                    <div class="tools">Capabilities: PDF generation, document processing, content conversion</div>
+                </div>
+
+                <div class="best-practices" style="margin-top: 30px;">
+                    <h3>When to Use Skills</h3>
+                    <ul>
+                        <li>Skills are <span class="highlight">pre-built for specific workflows</span> - use them instead of building custom solutions</li>
+                        <li>Skills <span class="highlight">integrate with your workflow</span> - they understand context like git repos and code</li>
+                        <li>Skills can be <span class="highlight">chained together</span> - use multiple skills sequentially for complex tasks</li>
+                        <li>Check <span class="highlight">/help</span> to see all available skills in your environment</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- LANGUAGE SERVER PROTOCOL SECTION -->
+            <section id="lsp">
+                <h2>Language Server Protocol (LSP)</h2>
+                <p style="margin-bottom: 30px; color: var(--text-secondary); font-size: 1.1rem;">LSP plugins supercharge Claude Code with real-time code intelligence, type awareness, and project-wide navigation. They bridge the gap between AI and your actual codebase.</p>
+
+                <h3>Why LSP Matters</h3>
+
+                <div class="workflow-section" style="border-left-color: var(--accent-cyan);">
+                    <p style="margin-bottom: 20px; color: var(--text-secondary);">Without LSP, Claude Code operates on static file reading and pattern matching. With LSP enabled, it gains <strong style="color: var(--accent-cyan);">real-time code intelligence</strong> from your language's compiler:</p>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;">
+                        <div>
+                            <h4 style="color: var(--accent-red); font-family: 'JetBrains Mono', monospace; margin-bottom: 10px;">❌ Without LSP</h4>
+                            <ul style="margin-left: 20px; color: var(--text-secondary);">
+                                <li style="margin-bottom: 8px;">Reads files as text</li>
+                                <li style="margin-bottom: 8px;">Pattern-based understanding</li>
+                                <li style="margin-bottom: 8px;">No type checking</li>
+                                <li style="margin-bottom: 8px;">Manual cross-file navigation</li>
+                                <li style="margin-bottom: 8px;">Limited refactoring accuracy</li>
+                                <li style="margin-bottom: 8px;">No workspace awareness</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 style="color: var(--accent-green); font-family: 'JetBrains Mono', monospace; margin-bottom: 10px;">✅ With LSP</h4>
+                            <ul style="margin-left: 20px; color: var(--text-secondary);">
+                                <li style="margin-bottom: 8px;">Type-aware understanding</li>
+                                <li style="margin-bottom: 8px;">Real-time error detection</li>
+                                <li style="margin-bottom: 8px;">Go-to-definition across files</li>
+                                <li style="margin-bottom: 8px;">Find all references instantly</li>
+                                <li style="margin-bottom: 8px;">Safe, project-wide refactoring</li>
+                                <li style="margin-bottom: 8px;">Respects tsconfig/project settings</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Practical Examples</h3>
+
+                <div class="example-box">
+<strong>Example 1: Type-Aware Understanding</strong>
+
+// Without LSP: Claude sees "user.profile" but doesn't know properties
+const email = user.profile.email;
+
+// With LSP: Claude knows profile = { email: string, name: string, avatar?: string }
+// Can suggest: "Did you mean user.profile.avatar?"
+
+<strong>Example 2: Go-to-Definition Across Files</strong>
+
+// Without LSP: Must search/grep to find UserService definition
+import { UserService } from './services';
+
+// With LSP: Instantly knows it's in src/services/UserService.ts:42
+
+<strong>Example 3: Real-Time Error Detection</strong>
+
+// Without LSP: Might suggest code with type errors
+const result: string = getNumber(); // Type error!
+
+// With LSP: "Error: Type 'number' is not assignable to type 'string'"
+
+<strong>Example 4: Safe Refactoring</strong>
+
+// Without LSP: Rename might miss references or break types
+function processUser(user: User) { ... }
+
+// With LSP: Safe rename across entire project, updates all references and types
+                </div>
+
+                <h3>How to Install & Activate</h3>
+
+                <div class="workflow-section">
+                    <h3>Step 1: Install the Plugin</h3>
+                    <div class="example-box">
+# Install TypeScript LSP plugin in Claude Code
+claude plugin install typescript-lsp@claude-plugins-official
+
+# Or other language servers:
+claude plugin install pyright-lsp@claude-plugins-official      # Python
+claude plugin install rust-analyzer-lsp@claude-plugins-official # Rust
+claude plugin install gopls-lsp@claude-plugins-official         # Go
+                    </div>
+
+                    <h3 style="margin-top: 30px;">Step 2: Install the Language Server Binary</h3>
+                    <p style="margin-bottom: 15px; color: var(--text-secondary);">The plugin needs the actual language server installed on your system:</p>
+                    <div class="example-box">
+# TypeScript/JavaScript
+npm install -g typescript-language-server typescript
+
+# Python
+pip install python-lsp-server
+
+# Rust
+rustup component add rust-analyzer
+
+# Go
+go install golang.org/x/tools/gopls@latest
+                    </div>
+
+                    <h3 style="margin-top: 30px;">Step 3: Verify Installation</h3>
+                    <div class="example-box">
+# Check TypeScript LSP is available
+typescript-language-server --version
+tsc --version
+
+# Now Claude Code will automatically use it for .ts/.tsx/.js/.jsx files!
+                    </div>
+                </div>
+
+                <h3>Available LSP Plugins</h3>
+
+                <div class="tool-grid">
+                    <div class="tool-card" style="border-left-color: var(--accent-green);">
+                        <h3 style="color: var(--accent-green);">TypeScript LSP</h3>
+                        <p>Real-time type checking and intelligence for TypeScript/JavaScript projects.</p>
+                        <p><strong>Supports:</strong> .ts, .tsx, .js, .jsx, .mts, .cts</p>
+                        <div class="usage">typescript-lsp@claude-plugins-official</div>
+                    </div>
+
+                    <div class="tool-card" style="border-left-color: var(--accent-green);">
+                        <h3 style="color: var(--accent-green);">Python LSP (Pyright)</h3>
+                        <p>Type checking and code intelligence for Python with Pyright.</p>
+                        <p><strong>Supports:</strong> .py</p>
+                        <div class="usage">pyright-lsp@claude-plugins-official</div>
+                    </div>
+
+                    <div class="tool-card" style="border-left-color: var(--accent-green);">
+                        <h3 style="color: var(--accent-green);">Rust Analyzer</h3>
+                        <p>Advanced Rust support with cargo integration and macro expansion.</p>
+                        <p><strong>Supports:</strong> .rs</p>
+                        <div class="usage">rust-analyzer-lsp@claude-plugins-official</div>
+                    </div>
+
+                    <div class="tool-card" style="border-left-color: var(--accent-green);">
+                        <h3 style="color: var(--accent-green);">Go LSP (gopls)</h3>
+                        <p>Official Go language server with full Go toolchain integration.</p>
+                        <p><strong>Supports:</strong> .go</p>
+                        <div class="usage">gopls-lsp@claude-plugins-official</div>
+                    </div>
+
+                    <div class="tool-card" style="border-left-color: var(--accent-green);">
+                        <h3 style="color: var(--accent-green);">Java LSP (JDTLS)</h3>
+                        <p>Eclipse JDT Language Server for Java development.</p>
+                        <p><strong>Supports:</strong> .java</p>
+                        <div class="usage">jdtls-lsp@claude-plugins-official</div>
+                    </div>
+
+                    <div class="tool-card" style="border-left-color: var(--accent-green);">
+                        <h3 style="color: var(--accent-green);">C/C++ LSP (clangd)</h3>
+                        <p>LLVM-based language server for C and C++ projects.</p>
+                        <p><strong>Supports:</strong> .c, .cpp, .h, .hpp</p>
+                        <div class="usage">clangd-lsp@claude-plugins-official</div>
+                    </div>
+                </div>
+
+                <div class="best-practices" style="margin-top: 30px;">
+                    <h3>LSP Best Practices</h3>
+                    <ul>
+                        <li><span class="highlight">Install for your primary languages</span> - TypeScript, Python, Rust, etc.</li>
+                        <li><span class="highlight">Keep language servers updated</span> - They improve with each release</li>
+                        <li><span class="highlight">Configure project files</span> - tsconfig.json, .eslintrc, etc. for best results</li>
+                        <li><span class="highlight">Use in large codebases</span> - LSP shines when navigating complex projects</li>
+                        <li><span class="highlight">Verify installation</span> - Test that the language server binary is in PATH</li>
+                    </ul>
+                </div>
+
+                <div class="tip">
+                    <strong>🚀 Pro Tip:</strong> LSP integration is a game-changer for large TypeScript/Python projects. Install it first thing when setting up Claude Code for maximum productivity. The difference in code navigation and refactoring accuracy is night and day.
+                </div>
+            </section>
+
+            <!-- MEMORY SECTION -->
+            <section id="memory">
+                <h2>Memory & Preferences</h2>
+                <p style="margin-bottom: 30px; color: var(--text-secondary); font-size: 1.1rem;">Claude Code can remember your preferences, coding standards, and workflows across sessions using CLAUDE.md files. Think of it as persistent context that Claude always has available.</p>
+
+                <h3>Why Memory Matters</h3>
+
+                <div class="workflow-section" style="border-left-color: var(--accent-amber);">
+                    <p style="margin-bottom: 20px; color: var(--text-secondary);">Instead of repeating instructions every session, store them once and Claude remembers:</p>
+                    <ul style="margin-left: 20px; color: var(--text-secondary);">
+                        <li style="margin-bottom: 10px;">✅ Code style preferences (indentation, naming conventions)</li>
+                        <li style="margin-bottom: 10px;">✅ Common commands for your project (build, test, deploy)</li>
+                        <li style="margin-bottom: 10px;">✅ Architectural patterns and best practices</li>
+                        <li style="margin-bottom: 10px;">✅ Team coding standards and workflows</li>
+                        <li style="margin-bottom: 10px;">✅ Security requirements and compliance policies</li>
+                        <li style="margin-bottom: 10px;">✅ Personal preferences across all projects</li>
+                    </ul>
+                </div>
+
+                <h3>Memory Hierarchy (5 Levels)</h3>
+
+                <div class="command-list">
+                    <div class="command-item" style="border-left: 3px solid var(--accent-red); padding-left: 15px;">
+                        <code style="background: rgba(255, 71, 87, 0.2); border-color: var(--accent-red);">Enterprise Policy</code>
+                        <p style="margin-top: 8px; color: var(--text-secondary);">Organization-wide instructions managed by IT/DevOps.</p>
+                        <p style="font-size: 0.9rem; color: var(--text-tertiary); margin-top: 8px;"><strong>Location:</strong> <code>/etc/claude-code/CLAUDE.md</code> (Linux), <code>C:\Program Files\ClaudeCode\CLAUDE.md</code> (Windows)</p>
+                        <p style="font-size: 0.9rem; color: var(--text-tertiary); margin-top: 5px;"><strong>Use for:</strong> Company coding standards, security policies, compliance requirements</p>
+                        <p style="font-size: 0.9rem; color: var(--text-tertiary); margin-top: 5px;"><strong>Shared with:</strong> All users in organization</p>
+                    </div>
+
+                    <div class="command-item" style="border-left: 3px solid var(--accent-amber); padding-left: 15px;">
+                        <code style="background: rgba(255, 180, 84, 0.2); border-color: var(--accent-amber);">Project Memory</code>
+                        <p style="margin-top: 8px; color: var(--text-secondary);">Team-shared instructions for the project.</p>
+                        <p style="font-size: 0.9rem; color: var(--text-tertiary); margin-top: 8px;"><strong>Location:</strong> <code>./CLAUDE.md</code> or <code>./.claude/CLAUDE.md</code></p>
+                        <p style="font-size: 0.9rem; color: var(--text-tertiary); margin-top: 5px;"><strong>Use for:</strong> Project architecture, coding standards, common workflows</p>
+                        <p style="font-size: 0.9rem; color: var(--text-tertiary); margin-top: 5px;"><strong>Shared with:</strong> Team members via source control</p>
+                    </div>
+
+                    <div class="command-item" style="border-left: 3px solid var(--accent-cyan); padding-left: 15px;">
+                        <code style="background: rgba(0, 212, 255, 0.2); border-color: var(--accent-cyan);">Project Rules</code>
+                        <p style="margin-top: 8px; color: var(--text-secondary);">Modular, topic-specific project instructions.</p>
+                        <p style="font-size: 0.9rem; color: var(--text-tertiary); margin-top: 8px;"><strong>Location:</strong> <code>./.claude/rules/*.md</code></p>
+                        <p style="font-size: 0.9rem; color: var(--text-tertiary); margin-top: 5px;"><strong>Use for:</strong> Language-specific guidelines, testing conventions, API standards</p>
+                        <p style="font-size: 0.9rem; color: var(--text-tertiary); margin-top: 5px;"><strong>Shared with:</strong> Team members via source control</p>
+                    </div>
+
+                    <div class="command-item" style="border-left: 3px solid var(--accent-green); padding-left: 15px;">
+                        <code style="background: rgba(57, 255, 20, 0.2); border-color: var(--accent-green);">User Memory</code>
+                        <p style="margin-top: 8px; color: var(--text-secondary);">Personal preferences for all projects.</p>
+                        <p style="font-size: 0.9rem; color: var(--text-tertiary); margin-top: 8px;"><strong>Location:</strong> <code>~/.claude/CLAUDE.md</code></p>
+                        <p style="font-size: 0.9rem; color: var(--text-tertiary); margin-top: 5px;"><strong>Use for:</strong> Code styling preferences, personal tooling shortcuts</p>
+                        <p style="font-size: 0.9rem; color: var(--text-tertiary); margin-top: 5px;"><strong>Shared with:</strong> Just you (all projects)</p>
+                    </div>
+
+                    <div class="command-item" style="border-left: 3px solid #a78bfa; padding-left: 15px;">
+                        <code style="background: rgba(167, 139, 250, 0.2); border-color: #a78bfa;">Project Memory (Local)</code>
+                        <p style="margin-top: 8px; color: var(--text-secondary);">Personal project-specific preferences (not committed to git).</p>
+                        <p style="font-size: 0.9rem; color: var(--text-tertiary); margin-top: 8px;"><strong>Location:</strong> <code>./CLAUDE.local.md</code></p>
+                        <p style="font-size: 0.9rem; color: var(--text-tertiary); margin-top: 5px;"><strong>Use for:</strong> Your sandbox URLs, preferred test data, local environment settings</p>
+                        <p style="font-size: 0.9rem; color: var(--text-tertiary); margin-top: 5px;"><strong>Shared with:</strong> Just you (current project only)</p>
+                    </div>
+                </div>
+
+                <h3>Quick Start: Create Project Memory</h3>
+
+                <div class="example-box">
+<strong>Bootstrap a CLAUDE.md file for your project:</strong>
+
+# In your project root
+/init
+
+# This creates ./.claude/CLAUDE.md with project context
+                </div>
+
+                <div class="example-box">
+<strong>Example CLAUDE.md for a React project:</strong>
+
+# Project: Customer Dashboard
+
+## Build & Test Commands
+- Build: `npm run build`
+- Test: `npm test`
+- Dev server: `npm run dev -- --port 3000`
+- Lint: `npm run lint`
+
+## Code Style
+- Use 2-space indentation
+- Prefer functional components with hooks
+- Use TypeScript strict mode
+- Name components with PascalCase
+- Use named exports for components
+
+## Architecture
+- Components in `src/components/`
+- Business logic in `src/hooks/`
+- API calls in `src/services/`
+- Types in `src/types/`
+
+## Important Context
+- Main API endpoint: https://api.example.com
+- Authentication uses JWT tokens
+- All components should be responsive (mobile-first)
+                </div>
+
+                <h3>Modular Rules with .claude/rules/</h3>
+
+                <div class="workflow-section">
+                    <p style="margin-bottom: 20px; color: var(--text-secondary);">For larger projects, organize instructions into focused topic files:</p>
+
+                    <div class="example-box">
+your-project/
+├── .claude/
+│   ├── CLAUDE.md              # Main project instructions
+│   └── rules/
+│       ├── code-style.md      # Code style guidelines
+│       ├── testing.md         # Testing conventions
+│       ├── security.md        # Security requirements
+│       └── frontend/
+│           ├── react.md       # React-specific rules
+│           └── styles.md      # Styling conventions
+                    </div>
+
+                    <p style="margin-top: 20px; margin-bottom: 15px; color: var(--text-secondary);"><strong style="color: var(--accent-cyan);">Path-Specific Rules:</strong> Apply rules only to specific files using frontmatter:</p>
+
+                    <div class="example-box">
+---
+paths:
+  - "src/api/**/*.ts"
+  - "src/services/**/*.ts"
+---
+
+# API Development Rules
+
+- All API endpoints must include input validation
+- Use the standard error response format
+- Include OpenAPI documentation comments
+- Handle errors with proper HTTP status codes
+                    </div>
+                </div>
+
+                <h3>The /memory Command</h3>
+
+                <div class="command-list">
+                    <div class="command-item">
+                        <code>/memory</code>
+                        <p>Open memory files in your editor for quick updates. Use this to view all loaded memory files and edit them directly.</p>
+                        <div class="example-box" style="margin-top: 15px;">
+# View and edit memory files
+/memory
+
+# Shows all loaded CLAUDE.md files and opens your editor
+                        </div>
+                    </div>
+
+                    <div class="command-item">
+                        <code>/init</code>
+                        <p>Bootstrap a CLAUDE.md file for your project with project context automatically extracted.</p>
+                        <div class="example-box" style="margin-top: 15px;">
+# Create project memory file
+/init
+
+# Creates ./.claude/CLAUDE.md with intelligent defaults
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Advanced: Importing Files</h3>
+
+                <div class="example-box">
+<strong>CLAUDE.md can import other files using @syntax:</strong>
+
+See @README.md for project overview and @package.json for available commands.
+
+# Additional Instructions
+- Git workflow: @docs/git-instructions.md
+- Individual preferences: @~/.claude/my-project-instructions.md
+
+# Imports work with:
+- Relative paths: @docs/file.md
+- Absolute paths: @/path/to/file.md
+- Home directory: @~/.claude/file.md
+- Max depth: 5 levels of imports
+                </div>
+
+                <h3>Memory Best Practices</h3>
+
+                <div class="best-practices">
+                    <h3>Writing Effective Memory</h3>
+                    <ul>
+                        <li><span class="highlight">Be specific:</span> "Use 2-space indentation" > "Format code properly"</li>
+                        <li><span class="highlight">Use structure:</span> Organize with markdown headings and bullet points</li>
+                        <li><span class="highlight">Include commands:</span> List frequent commands to avoid repeated searches</li>
+                        <li><span class="highlight">Document architecture:</span> Explain key patterns specific to your project</li>
+                        <li><span class="highlight">Review periodically:</span> Update as your project evolves</li>
+                        <li><span class="highlight">Keep rules focused:</span> One topic per file in .claude/rules/</li>
+                    </ul>
+                </div>
+
+                <div class="best-practices">
+                    <h3>Organizing Memory Files</h3>
+                    <ul>
+                        <li><span class="highlight">Project-wide:</span> Use ./CLAUDE.md for team standards</li>
+                        <li><span class="highlight">Personal global:</span> Use ~/.claude/CLAUDE.md for your preferences</li>
+                        <li><span class="highlight">Personal local:</span> Use ./CLAUDE.local.md for private project settings</li>
+                        <li><span class="highlight">Modular rules:</span> Use .claude/rules/ for topic-specific guidelines</li>
+                        <li><span class="highlight">Path-specific:</span> Add frontmatter with paths: for conditional rules</li>
+                    </ul>
+                </div>
+
+                <h3>Real-World Examples</h3>
+
+                <div class="example-box">
+<strong>Example 1: Personal User Memory (~/.claude/CLAUDE.md)</strong>
+
+# My Global Preferences
+
+## Code Style
+- Always use TypeScript strict mode
+- Prefer const over let
+- Use early returns to reduce nesting
+- Add JSDoc comments for public APIs
+
+## Testing
+- Write tests before implementing (TDD)
+- Use descriptive test names: "should X when Y"
+- Prefer integration tests over unit tests
+
+## Git Workflow
+- Commit messages: type(scope): description
+- Always rebase before merging
+- Squash commits for cleaner history
+
+<strong>Example 2: Team Project Memory (./.claude/CLAUDE.md)</strong>
+
+# E-Commerce Platform
+
+## Quick Commands
+- Start dev: `npm run dev`
+- Run tests: `npm test -- --watch`
+- Build prod: `npm run build:prod`
+- Deploy staging: `./scripts/deploy-staging.sh`
+
+## Architecture
+- Frontend: Next.js 14 with App Router
+- Backend: Node.js + PostgreSQL
+- State: React Context + React Query
+- Styling: Tailwind CSS
+
+## Important URLs
+- Staging: https://staging.example.com
+- Production: https://example.com
+- API Docs: https://api.example.com/docs
+
+## Code Conventions
+- Components in `src/app/` follow Next.js conventions
+- Shared components in `src/components/`
+- Use Server Components by default
+- Client Components: add "use client" directive
+
+<strong>Example 3: Testing Rules (./.claude/rules/testing.md)</strong>
+
+---
+paths:
+  - "**/*.test.ts"
+  - "**/*.spec.ts"
+---
+
+# Testing Standards
+
+## Test Structure
+- Arrange-Act-Assert pattern
+- One assertion per test when possible
+- Use descriptive test names
+
+## Coverage Requirements
+- Minimum 80% coverage for new code
+- 100% coverage for utility functions
+- E2E tests for critical user flows
+
+## Best Practices
+- Mock external dependencies
+- Use test fixtures for complex data
+- Clean up after tests (afterEach)
+                </div>
+
+                <div class="tip">
+                    <strong>🎯 Pro Tip:</strong> Start with a project CLAUDE.md containing your most common commands and style preferences. As patterns emerge, create focused rule files in .claude/rules/ for better organization. Use CLAUDE.local.md for personal sandbox URLs and test data that shouldn't be committed to git.
+                </div>
+            </section>
+
+            <!-- SLASH COMMANDS SECTION -->
+            <section id="slash-commands">
+                <h2>Slash Commands</h2>
+                <p style="margin-bottom: 30px; color: var(--text-secondary); font-size: 1.1rem;">Slash commands are built-in CLI features that provide access to tools and information. Type them directly in your prompt or use them as shortcuts.</p>
+
+                <div class="command-list">
+                    <div class="command-item">
+                        <code>/help</code>
+                        <p>Display help information about Claude Code features, commands, and capabilities. Use this to explore available tools and get usage guidance.</p>
+                        <p style="font-size: 0.95rem; color: var(--text-tertiary); margin-top: 8px;"><strong>Use when:</strong> You need guidance on Claude Code features or want to discover available commands.</p>
+                    </div>
+
+                    <div class="command-item">
+                        <code>/tasks</code>
+                        <p>List all running or completed background tasks, showing their IDs and status. Use this to check on long-running operations and retrieve task outputs.</p>
+                        <p style="font-size: 0.95rem; color: var(--text-tertiary); margin-top: 8px;"><strong>Use when:</strong> You need to monitor background processes or retrieve results from previous tasks.</p>
+                    </div>
+
+                    <div class="command-item">
+                        <code>/commit</code>
+                        <p>Invoke the Commit skill to create well-structured git commits with intelligent message generation.</p>
+                        <p style="font-size: 0.95rem; color: var(--text-tertiary); margin-top: 8px;"><strong>Use when:</strong> You want to create a git commit with best practices and proper formatting.</p>
+                    </div>
+
+                    <div class="command-item">
+                        <code>/review-pr</code>
+                        <p>Invoke the Review PR skill to analyze and provide comprehensive feedback on pull requests.</p>
+                        <p style="font-size: 0.95rem; color: var(--text-tertiary); margin-top: 8px;"><strong>Use when:</strong> You need an automated code review with specific recommendations and quality checks.</p>
+                    </div>
+
+                    <div class="command-item">
+                        <code>/pdf</code>
+                        <p>Invoke the PDF skill to generate or process PDF documents.</p>
+                        <p style="font-size: 0.95rem; color: var(--text-tertiary); margin-top: 8px;"><strong>Use when:</strong> You need to create reports, documentation, or convert content to PDF format.</p>
+                    </div>
+
+                    <div class="command-item">
+                        <code>/clear</code>
+                        <p>Clear the CLI interface or reset the current session state. Built-in CLI command.</p>
+                        <p style="font-size: 0.95rem; color: var(--text-tertiary); margin-top: 8px;"><strong>Use when:</strong> You want to clean up the display or start fresh.</p>
+                    </div>
+                </div>
+
+                <div class="tip">
+                    <strong>💡 Tip:</strong> Not all slash commands work in all contexts. Type <code>/help</code> to see which commands are available in your environment. Some commands may require specific setup or dependencies.
+                </div>
+
+                <h3>Slash Command Examples</h3>
+
+                <div class="example-box">
+# Check available skills and commands
+/help
+
+# Monitor your running tasks
+/tasks
+
+# Create a git commit
+/commit
+
+# Get a PR review
+/review-pr 42
+
+# Generate a PDF report
+/pdf --title "Code Analysis Report"
+
+# Clear the interface
+/clear
+                </div>
+            </section>
+
+            <!-- HOOKS SECTION -->
+            <section id="hooks">
+                <h2>Hooks</h2>
+                <p style="margin-bottom: 30px; color: var(--text-secondary); font-size: 1.1rem;">Hooks are shell commands configured in Claude Code settings that execute automatically in response to specific events. They enable powerful automation and custom workflows.</p>
+
+                <h3>How Hooks Work</h3>
+
+                <div class="workflow-section">
+                    <p style="margin-bottom: 20px;">Hooks are triggered by Claude Code events and can execute any shell command. They allow you to:</p>
+                    <ul style="margin-left: 20px; color: var(--text-secondary);">
+                        <li style="margin-bottom: 10px;">Automatically run tests after code changes</li>
+                        <li style="margin-bottom: 10px;">Execute linters or formatters on modified files</li>
+                        <li style="margin-bottom: 10px;">Trigger build processes at key moments</li>
+                        <li style="margin-bottom: 10px;">Send notifications or integrate with external tools</li>
+                        <li style="margin-bottom: 10px;">Validate changes before commits</li>
+                        <li style="margin-bottom: 10px;">Run security checks or dependency audits</li>
+                    </ul>
+                </div>
+
+                <h3>Available Hook Events</h3>
+
+                <div class="command-list">
+                    <div class="command-item">
+                        <code style="background: rgba(255, 71, 87, 0.2); border-color: var(--accent-red);">user-prompt-submit-hook</code>
+                        <p>Triggered when a user submits a prompt. Treat responses as coming directly from the user.</p>
+                        <p style="font-size: 0.95rem; color: var(--text-tertiary); margin-top: 8px;"><strong>Use for:</strong> Pre-processing user input, validation, or notifications.</p>
+                    </div>
+
+                    <div class="command-item">
+                        <code style="background: rgba(57, 255, 20, 0.2); border-color: var(--accent-green);">tool-call-hook</code>
+                        <p>Triggered when a tool is invoked. Execute commands or validation based on specific tool usage.</p>
+                        <p style="font-size: 0.95rem; color: var(--text-tertiary); margin-top: 8px;"><strong>Use for:</strong> Logging tool usage, running security checks, or triggering related processes.</p>
+                    </div>
+
+                    <div class="command-item">
+                        <code style="background: rgba(0, 212, 255, 0.2); border-color: var(--accent-cyan);">post-edit-hook</code>
+                        <p>Triggered after a file edit. Run formatters, linters, or tests on modified files automatically.</p>
+                        <p style="font-size: 0.95rem; color: var(--text-tertiary); margin-top: 8px;"><strong>Use for:</strong> Auto-formatting, linting, or running related tests.</p>
+                    </div>
+
+                    <div class="command-item">
+                        <code style="background: rgba(255, 180, 84, 0.2); border-color: var(--accent-amber);">pre-commit-hook</code>
+                        <p>Triggered before a git commit. Validate code, run checks, or format files before committing.</p>
+                        <p style="font-size: 0.95rem; color: var(--text-tertiary); margin-top: 8px;"><strong>Use for:</strong> Code quality gates, formatting enforcement, or security scanning.</p>
+                    </div>
+
+                    <div class="command-item">
+                        <code style="background: rgba(57, 255, 20, 0.2); border-color: var(--accent-green);">post-bash-hook</code>
+                        <p>Triggered after a bash command completes. React to command output or chain related operations.</p>
+                        <p style="font-size: 0.95rem; color: var(--text-tertiary); margin-top: 8px;"><strong>Use for:</strong> Test result processing, build notifications, or cleanup operations.</p>
+                    </div>
+                </div>
+
+                <h3>Configuring Hooks</h3>
+
+                <div class="best-practices">
+                    <h3>Hook Configuration Steps</h3>
+                    <ul>
+                        <li><span class="highlight">Access Settings:</span> Navigate to Claude Code settings/configuration</li>
+                        <li><span class="highlight">Define Hooks:</span> Add hook definitions with event type and shell command</li>
+                        <li><span class="highlight">Test Hooks:</span> Verify hooks execute correctly with sample events</li>
+                        <li><span class="highlight">Monitor Hooks:</span> Check hook outputs for errors or unexpected behavior</li>
+                        <li><span class="highlight">Debug Issues:</span> If hooks block actions, review the hook output and adjust the command</li>
+                    </ul>
+                </div>
+
+                <h3>Hook Examples</h3>
+
+                <div class="example-box">
+# Post-edit hook: Auto-format TypeScript files
+post-edit-hook: "if [[ $FILE == *.ts ]]; then npx prettier --write $FILE; fi"
+
+# Pre-commit hook: Run tests before committing
+pre-commit-hook: "npm test && npm run lint"
+
+# Post-bash hook: Show test results summary
+post-bash-hook: "if [[ $COMMAND == npm\ test ]]; then echo 'Tests completed'; fi"
+
+# Tool-call hook: Log all Read operations
+tool-call-hook: "if [[ $TOOL == 'Read' ]]; then echo \"Read: $FILE\" >> .claude-log; fi"
+                </div>
+
+                <div class="tip">
+                    <strong>⚠️ Important:</strong> Hooks can block actions if they fail or take too long. If you encounter unexpected blocking behavior, check your hooks configuration. You can disable or adjust hooks in settings if they cause issues.
+                </div>
+
+                <h3>Common Hook Patterns</h3>
+
+                <div class="example-box">
+<strong>Pattern 1: Automatic Testing</strong>
+post-edit-hook: "npm test"
+→ Runs tests automatically after any file edit
+
+<strong>Pattern 2: Code Quality</strong>
+pre-commit-hook: "npm run lint && npm run format"
+→ Ensures code passes linting before commits
+
+<strong>Pattern 3: Build Verification</strong>
+post-bash-hook: "if [[ $COMMAND == npm\ test ]]; then npm run build; fi"
+→ Builds after successful tests
+
+<strong>Pattern 4: Audit & Security</strong>
+tool-call-hook: "npm audit fix || true"
+→ Audits dependencies regularly
+
+<strong>Pattern 5: Documentation</strong>
+pre-commit-hook: "npm run generate-docs"
+→ Regenerates documentation before commits
+                </div>
+
+                <div class="best-practices">
+                    <h3>Hook Best Practices</h3>
+                    <ul>
+                        <li>Keep hooks <span class="highlight">fast and focused</span> - avoid long-running operations that block workflows</li>
+                        <li>Use <span class="highlight">conditional logic</span> - check file types or command names before executing</li>
+                        <li>Handle <span class="highlight">errors gracefully</span> - use <code>|| true</code> for non-critical operations</li>
+                        <li>Test hooks <span class="highlight">independently</span> - verify they work before deployment</li>
+                        <li>Document your hooks <span class="highlight">clearly</span> - include comments explaining what they do and why</li>
+                        <li>Monitor hook performance <span class="highlight">closely</span> - slow hooks can impact overall efficiency</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- WORKFLOWS SECTION -->
+            <section id="workflows">
+                <h2>Efficient Workflows</h2>
+
+                <div class="workflow-section">
+                    <h3>Workflow 1: Bug Investigation & Fix</h3>
+                    <ol class="workflow-steps">
+                        <li><strong>Explore:</strong> Use Task(subagent=Explore) to understand where the bug might be</li>
+                        <li><strong>Read:</strong> Read the relevant files to understand the code</li>
+                        <li><strong>Hypothesize:</strong> Form a theory about what's wrong</li>
+                        <li><strong>Search:</strong> Use Grep to find similar patterns or related code</li>
+                        <li><strong>Test:</strong> Create a minimal reproduction if needed</li>
+                        <li><strong>Fix:</strong> Edit the file with targeted changes</li>
+                        <li><strong>Verify:</strong> Run tests with Bash</li>
+                    </ol>
+                </div>
+
+                <div class="workflow-section">
+                    <h3>Workflow 2: Implementing New Features</h3>
+                    <ol class="workflow-steps">
+                        <li><strong>Plan:</strong> Use EnterPlanMode to design the approach</li>
+                        <li><strong>Explore:</strong> Understand existing patterns in the codebase</li>
+                        <li><strong>Create TODOs:</strong> Use TodoWrite to track implementation steps</li>
+                        <li><strong>Implement:</strong> Build the feature step by step, marking TODOs complete</li>
+                        <li><strong>Test:</strong> Run tests and verify functionality</li>
+                        <li><strong>Review:</strong> Read the changes to ensure quality</li>
+                    </ol>
+                </div>
+
+                <div class="workflow-section">
+                    <h3>Workflow 3: Refactoring Legacy Code</h3>
+                    <ol class="workflow-steps">
+                        <li><strong>Understand:</strong> Use Explore agent to map the current structure</li>
+                        <li><strong>Document:</strong> Create TODOs for each refactoring step</li>
+                        <li><strong>Test First:</strong> Ensure tests pass before changes</li>
+                        <li><strong>Refactor Incrementally:</strong> Small changes, test frequently</li>
+                        <li><strong>Verify:</strong> Run full test suite after completion</li>
+                    </ol>
+                </div>
+            </section>
+
+            <!-- BEST PRACTICES SECTION -->
+            <section id="best-practices">
+                <h2>Best Practices for Efficient Work</h2>
+
+                <div class="best-practices">
+                    <h3>🚀 Code Changes</h3>
+                    <ul>
+                        <li>Always <span class="highlight">Read first</span> - understand existing code before modifying</li>
+                        <li>Use <span class="highlight">Edit</span> for targeted changes, not Write for partial updates</li>
+                        <li>Keep changes <span class="highlight">focused</span> - don't refactor surrounding code unless asked</li>
+                        <li>Avoid <span class="highlight">over-engineering</span> - simple solutions beat premature abstractions</li>
+                        <li>Use <span class="highlight">TodoWrite early</span> for multi-step tasks to avoid forgetting steps</li>
+                    </ul>
+                </div>
+
+                <div class="best-practices">
+                    <h3>🔍 Search & Exploration</h3>
+                    <ul>
+                        <li>Use <span class="highlight">Glob</span> for finding files by pattern (fastest)</li>
+                        <li>Use <span class="highlight">Grep</span> for searching content within files</li>
+                        <li>Run <span class="highlight">multiple searches in parallel</span> when looking for different patterns</li>
+                        <li>Use <span class="highlight">Task(Explore)</span> for open-ended questions about the codebase</li>
+                        <li>Save context by using <span class="highlight">Explore agent</span> instead of manual searches</li>
+                    </ul>
+                </div>
+
+                <div class="best-practices">
+                    <h3>📋 Planning & Organization</h3>
+                    <ul>
+                        <li>Use <span class="highlight">EnterPlanMode</span> before implementing complex features</li>
+                        <li>Use <span class="highlight">TodoWrite</span> for tasks with 3+ steps</li>
+                        <li>Mark TODOs as <span class="highlight">in_progress immediately</span> when starting work</li>
+                        <li>Mark TODOs as <span class="highlight">completed immediately</span> after finishing (don't batch)</li>
+                        <li>Use <span class="highlight">AskUserQuestion</span> early to avoid rework</li>
+                    </ul>
+                </div>
+
+                <div class="best-practices">
+                    <h3>⚡ Performance & Efficiency</h3>
+                    <ul>
+                        <li><span class="highlight">Parallelize</span> independent operations (multiple Glob/Grep calls)</li>
+                        <li>Use <span class="highlight">background tasks</span> for long-running operations</li>
+                        <li>Prefer <span class="highlight">specialized tools</span> over Bash (Read vs cat, Edit vs sed)</li>
+                        <li>Use <span class="highlight">Explore agent</span> for complex codebase questions (saves context)</li>
+                        <li><span class="highlight">Limit file reads</span> - use line offset/limit for large files</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- QUICK REFERENCE SECTION -->
+            <section id="quick-reference">
+                <h2>Quick Reference</h2>
+
+                <div class="tip">
+                    <strong>💡 Tip:</strong> Check your hooks configuration if you get blocked by unexpected messages. Hooks are shell commands that execute in response to events.
+                </div>
+
+                <h3>Decision Tree: Which Tool to Use?</h3>
+
+                <div class="example-box">
+<strong>Need to find files?</strong>
+  → Glob (by pattern) or Explore agent (if unclear what to search)
+
+<strong>Need to search code content?</strong>
+  → Grep (for specific code) or Explore agent (for patterns/understanding)
+
+<strong>Need to understand the codebase?</strong>
+  → Explore agent (for overview/questions) or read specific files with Read
+
+<strong>Need to modify code?</strong>
+  → Read first → Edit (targeted changes) or Write (new files)
+
+<strong>Need to run commands?</strong>
+  → Bash (terminal operations, git, npm, tests, builds)
+
+<strong>Complex multi-step task?</strong>
+  → Task(subagent_type=...) or EnterPlanMode for design
+
+<strong>Need to track progress?</strong>
+  → TodoWrite for 3+ steps
+
+<strong>Need user input before proceeding?</strong>
+  → AskUserQuestion
+                </div>
+
+                <h3>Common Parallel Operations</h3>
+
+                <div class="example-box">
+# Find multiple file types at once
+Glob("src/**/*.tsx", path)
+Glob("src/**/*.ts", path)  // in parallel
+
+# Search multiple patterns
+Grep("export function", path1)
+Grep("export const", path2)  // in parallel
+
+# Read multiple files
+Read("file1.ts")
+Read("file2.ts")
+Read("file3.ts")  // in parallel
+                </div>
+
+                <h3>Example: Fixing a Bug Efficiently</h3>
+
+                <div class="example-box">
+<strong>Step 1: Explore</strong>
+Task(description="Where is the bug?",
+     subagent_type="Explore")
+
+<strong>Step 2: Read & Understand</strong>
+Read("/path/to/suspicious/file.ts")
+
+<strong>Step 3: Search for Related Code</strong>
+Grep("similar_pattern", path)
+
+<strong>Step 4: Fix</strong>
+Edit(file, old_code, new_code)
+
+<strong>Step 5: Test</strong>
+Bash("npm test")
+                </div>
+
+                <h3>Example: Implementing a Feature</h3>
+
+                <div class="example-box">
+<strong>Step 1: Enter Plan Mode</strong>
+EnterPlanMode()
+  → Explore codebase patterns
+  → Design approach
+  → ExitPlanMode()
+
+<strong>Step 2: Create TODOs</strong>
+TodoWrite([
+  {content: "Create component", status: "pending"},
+  {content: "Add styles", status: "pending"},
+  {content: "Write tests", status: "pending"}
+])
+
+<strong>Step 3: Implement with Progress Tracking</strong>
+(Mark as in_progress, complete immediately after each step)
+
+<strong>Step 4: Verify</strong>
+Bash("npm test && npm run build")
+                </div>
+            </section>
+
+            <section>
+                <h2>Teaching Points for Your Team</h2>
+
+                <div class="best-practices">
+                    <h3>Key Principles</h3>
+                    <ul>
+                        <li><strong>Read first, modify second:</strong> Never propose changes without reading the code</li>
+                        <li><strong>Parallelize:</strong> Run independent operations at the same time</li>
+                        <li><strong>Be specific:</strong> Use targeted searches and edits, not broad replacements</li>
+                        <li><strong>Track progress:</strong> Use TODOs for visibility into multi-step work</li>
+                        <li><strong>Plan complex work:</strong> Use EnterPlanMode for architectural decisions</li>
+                        <li><strong>Ask for clarity:</strong> Use AskUserQuestion instead of guessing</li>
+                    </ul>
+                </div>
+
+                <div class="tip">
+                    <strong>🎯 Pro Tip:</strong> The most efficient engineers using Claude Code are those who plan first (EnterPlanMode, TodoWrite), explore thoroughly (Explore agent), and parallelize operations (multiple Glob/Grep calls at once). Time spent planning saves time in execution.
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>CLAUDE CODE // Complete Operational Manual</p>
+            <p style="margin-top: 15px; opacity: 0.6;">Learn to work efficiently with AI-assisted software engineering</p>
+            <p style="margin-top: 15px; font-size: 0.85rem;">For questions, use <code>/help</code> or refer to official documentation</p>
+        </footer>
+    </div>
+</body>
+</html>
