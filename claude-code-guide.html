@@ -623,6 +623,8 @@
             <a href="#workflows">Workflows</a>
             <a href="#best-practices">Best Practices</a>
             <a href="#quick-reference">Quick Reference</a>
+            <a href="#long-running-agents">Long-Running Agents</a>
+            <a href="#advanced-tool-use">Advanced Tool Use</a>
         </nav>
 
         <main>
@@ -1691,6 +1693,367 @@ Bash("npm test && npm run build")
 
                 <div class="tip">
                     <strong>🎯 Pro Tip:</strong> The most efficient engineers using Claude Code are those who plan first (EnterPlanMode, TodoWrite), explore thoroughly (Explore agent), and parallelize operations (multiple Glob/Grep calls at once). Time spent planning saves time in execution.
+                </div>
+            </section>
+
+            <!-- LONG-RUNNING AGENTS SECTION -->
+            <section id="long-running-agents">
+                <h2>Long-Running Agent Best Practices</h2>
+                <p style="margin-bottom: 30px; color: var(--text-secondary); font-size: 1.1rem;">Insights from Anthropic's research on building effective harnesses for autonomous, long-running coding agents. These patterns help agents maintain context, avoid common pitfalls, and deliver reliable results over extended sessions.</p>
+
+                <h3>Two-Agent Architecture</h3>
+
+                <div class="workflow-section" style="border-left-color: var(--accent-cyan);">
+                    <p style="margin-bottom: 20px; color: var(--text-secondary);">Anthropic's research identifies a <strong style="color: var(--accent-cyan);">two-agent pattern</strong> as foundational for complex, long-running tasks:</p>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;">
+                        <div>
+                            <h4 style="color: var(--accent-amber); font-family: 'JetBrains Mono', monospace; margin-bottom: 10px;">1. Initializer Agent</h4>
+                            <ul style="margin-left: 20px; color: var(--text-secondary);">
+                                <li style="margin-bottom: 8px;">Sets up the environment on first run</li>
+                                <li style="margin-bottom: 8px;">Creates <code>init.sh</code> script for dev servers</li>
+                                <li style="margin-bottom: 8px;">Establishes <code>progress.txt</code> for work history</li>
+                                <li style="margin-bottom: 8px;">Makes initial git commit showing setup</li>
+                                <li style="margin-bottom: 8px;">Defines feature list with clear scope</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 style="color: var(--accent-green); font-family: 'JetBrains Mono', monospace; margin-bottom: 10px;">2. Coding Agent</h4>
+                            <ul style="margin-left: 20px; color: var(--text-secondary);">
+                                <li style="margin-bottom: 8px;">Handles subsequent sessions</li>
+                                <li style="margin-bottom: 8px;">Focuses on incremental work</li>
+                                <li style="margin-bottom: 8px;">Reads progress files before starting</li>
+                                <li style="margin-bottom: 8px;">Commits with descriptive messages</li>
+                                <li style="margin-bottom: 8px;">Ensures clean handoffs between sessions</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Environment Scaffolding</h3>
+
+                <div class="best-practices">
+                    <h3>Setting Up for Success</h3>
+                    <ul>
+                        <li>Create <span class="highlight">comprehensive feature lists</span> (200+ items for complex apps) in JSON format to prevent premature completion</li>
+                        <li>Mark all features as <span class="highlight">"failing" initially</span> to establish clear scope and prevent early victory declarations</li>
+                        <li>Use <span class="highlight">strongly-worded constraints</span>: "It is unacceptable to remove or edit tests because this could lead to missing or buggy functionality"</li>
+                        <li>Prefer <span class="highlight">JSON over Markdown</span> for feature tracking - it's more resistant to model-induced corruption</li>
+                        <li>Create an <span class="highlight">init.sh script</span> that handles environment setup, dev server startup, and dependency installation</li>
+                    </ul>
+                </div>
+
+                <h3>Incremental Progress Pattern</h3>
+
+                <div class="workflow-section">
+                    <h3>Work on One Feature at a Time</h3>
+                    <p style="margin-bottom: 20px; color: var(--text-secondary);">The research strongly emphasizes <strong style="color: var(--accent-amber);">incremental work</strong> over comprehensive solutions:</p>
+                    <ol class="workflow-steps">
+                        <li><strong>Select one feature</strong> from the priority list - don't attempt multiple features at once</li>
+                        <li><strong>Implement minimally</strong> - get it working before optimizing</li>
+                        <li><strong>Test thoroughly</strong> - verify the feature works as expected</li>
+                        <li><strong>Commit to git</strong> with a descriptive message explaining what was done</li>
+                        <li><strong>Update progress file</strong> with a summary of changes and any blockers</li>
+                        <li><strong>Mark feature complete</strong> only after verification passes</li>
+                        <li><strong>Move to next feature</strong> - repeat the cycle</li>
+                    </ol>
+                </div>
+
+                <h3>Session Startup Protocol</h3>
+
+                <div class="example-box">
+<strong>Every session should begin with these checks:</strong>
+
+1. Check working directory with `pwd`
+2. Review git logs: `git log --oneline -10`
+3. Read progress files to understand current state
+4. Read feature list and select highest-priority incomplete item
+5. Run basic functionality verification before new work
+6. Verify app isn't in broken state before implementation
+
+<strong>Example startup sequence:</strong>
+
+# Where am I?
+pwd
+
+# What's been done?
+git log --oneline -5
+cat progress.txt
+
+# What's the current state?
+npm run test  # or equivalent verification
+
+# Now select next feature and begin work
+                </div>
+
+                <h3>Mandatory Testing</h3>
+
+                <div class="best-practices">
+                    <h3>Verification is Non-Negotiable</h3>
+                    <ul>
+                        <li>Implement <span class="highlight">browser automation</span> tools (Puppeteer, Playwright) for end-to-end testing</li>
+                        <li>Test features <span class="highlight">as humans would</span> - not just unit tests or CLI validation</li>
+                        <li><span class="highlight">Never mark complete</span> without running verification</li>
+                        <li>Use <span class="highlight">visual verification</span> where possible - screenshots, browser previews</li>
+                        <li>Explicitly prompt for <span class="highlight">feature verification</span> before marking as complete</li>
+                    </ul>
+                </div>
+
+                <h3>Common Failure Modes & Solutions</h3>
+
+                <div class="command-list">
+                    <div class="command-item" style="border-left: 3px solid var(--accent-red); padding-left: 15px;">
+                        <code style="background: rgba(255, 71, 87, 0.2); border-color: var(--accent-red);">"One-shotting" entire application</code>
+                        <p style="margin-top: 8px; color: var(--text-secondary);"><strong>Problem:</strong> Agent attempts to build everything at once, leading to incomplete or broken features.</p>
+                        <p style="font-size: 0.95rem; color: var(--accent-green); margin-top: 8px;"><strong>Solution:</strong> Structured feature list with incremental marking. Work on one feature at a time.</p>
+                    </div>
+
+                    <div class="command-item" style="border-left: 3px solid var(--accent-red); padding-left: 15px;">
+                        <code style="background: rgba(255, 71, 87, 0.2); border-color: var(--accent-red);">Premature victory declaration</code>
+                        <p style="margin-top: 8px; color: var(--text-secondary);"><strong>Problem:</strong> Agent claims work is complete when features are missing or broken.</p>
+                        <p style="font-size: 0.95rem; color: var(--accent-green); margin-top: 8px;"><strong>Solution:</strong> Feature tracking with explicit "passing/failing" status prevents early closure. Require verification.</p>
+                    </div>
+
+                    <div class="command-item" style="border-left: 3px solid var(--accent-red); padding-left: 15px;">
+                        <code style="background: rgba(255, 71, 87, 0.2); border-color: var(--accent-red);">Undocumented bugs cascading</code>
+                        <p style="margin-top: 8px; color: var(--text-secondary);"><strong>Problem:</strong> Issues introduced in one session compound in later sessions due to poor handoffs.</p>
+                        <p style="font-size: 0.95rem; color: var(--accent-green); margin-top: 8px;"><strong>Solution:</strong> Git commits + progress notes at every session end. Document blockers and known issues.</p>
+                    </div>
+
+                    <div class="command-item" style="border-left: 3px solid var(--accent-red); padding-left: 15px;">
+                        <code style="background: rgba(255, 71, 87, 0.2); border-color: var(--accent-red);">Runtime configuration confusion</code>
+                        <p style="margin-top: 8px; color: var(--text-secondary);"><strong>Problem:</strong> Agent struggles to set up or restart the development environment.</p>
+                        <p style="font-size: 0.95rem; color: var(--accent-green); margin-top: 8px;"><strong>Solution:</strong> Pre-written <code>init.sh</code> script that handles all setup. Document environment requirements clearly.</p>
+                    </div>
+                </div>
+
+                <h3>Applying to Claude Code</h3>
+
+                <div class="example-box">
+<strong>How to apply these patterns in your Claude Code sessions:</strong>
+
+1. <strong style="color: var(--accent-cyan);">Use TodoWrite as your feature list</strong>
+   → Create comprehensive todos at the start
+   → Mark items in_progress/completed as you go
+   → Never mark complete without testing
+
+2. <strong style="color: var(--accent-cyan);">Use CLAUDE.md as your progress file</strong>
+   → Document project state and context
+   → Include known issues and blockers
+   → Update with each significant change
+
+3. <strong style="color: var(--accent-cyan);">Commit frequently with descriptive messages</strong>
+   → Each feature gets its own commit
+   → Include what was done and why
+   → Makes it easy to revert if needed
+
+4. <strong style="color: var(--accent-cyan);">Verify before marking complete</strong>
+   → Run tests after each change
+   → Use browser automation for UI features
+   → Never assume - always check
+                </div>
+
+                <div class="tip">
+                    <strong>🔬 Research Insight:</strong> Anthropic's research found that agents equipped with these scaffolding patterns dramatically outperformed those without. The key is treating long-running tasks as a series of small, verifiable steps rather than one large operation. This mirrors how experienced engineers work: incrementally, with frequent commits and constant verification.
+                </div>
+            </section>
+
+            <!-- ADVANCED TOOL USE SECTION -->
+            <section id="advanced-tool-use">
+                <h2>Advanced Tool Use Patterns</h2>
+                <p style="margin-bottom: 30px; color: var(--text-secondary); font-size: 1.1rem;">Insights from Anthropic's engineering on maximizing tool effectiveness. These patterns help reduce context bloat, improve accuracy, and enable sophisticated orchestration.</p>
+
+                <h3>Three Pillars of Advanced Tool Use</h3>
+
+                <div class="tool-grid">
+                    <div class="tool-card" style="border-left-color: var(--accent-cyan);">
+                        <h3 style="color: var(--accent-cyan);">🔍 Tool Search Tool</h3>
+                        <p>Dynamic discovery without loading all definitions upfront.</p>
+                        <p><strong>Solves:</strong> Context bloat from too many tool definitions</p>
+                        <p><strong>Impact:</strong> 85% token reduction, accuracy improved from 49% to 74%</p>
+                        <div class="usage">Load tools on-demand, not all at once</div>
+                    </div>
+
+                    <div class="tool-card" style="border-left-color: var(--accent-amber);">
+                        <h3 style="color: var(--accent-amber);">⚙️ Programmatic Tool Calling</h3>
+                        <p>Code-based orchestration reducing context pollution.</p>
+                        <p><strong>Solves:</strong> Large intermediate results polluting context</p>
+                        <p><strong>Impact:</strong> 37% average token reduction, eliminates inference passes</p>
+                        <div class="usage">Process results in code, return only what matters</div>
+                    </div>
+
+                    <div class="tool-card" style="border-left-color: var(--accent-green);">
+                        <h3 style="color: var(--accent-green);">📝 Tool Use Examples</h3>
+                        <p>Concrete usage patterns improving invocation accuracy.</p>
+                        <p><strong>Solves:</strong> Parameter errors and ambiguity</p>
+                        <p><strong>Impact:</strong> Accuracy improved from 72% to 90%</p>
+                        <div class="usage">Show realistic examples, not placeholder text</div>
+                    </div>
+                </div>
+
+                <h3>Strategic Layering Approach</h3>
+
+                <div class="workflow-section" style="border-left-color: var(--accent-cyan);">
+                    <p style="margin-bottom: 20px; color: var(--text-secondary);"><strong style="color: var(--accent-cyan);">Start with your biggest bottleneck</strong> rather than implementing all features at once:</p>
+
+                    <div class="example-box">
+<strong>Identify Your Bottleneck:</strong>
+
+❓ Tool definitions exceed 10K tokens?
+   → Use <span style="color: var(--accent-cyan);">Tool Search Tool</span> for dynamic discovery
+
+❓ Large intermediate results polluting context?
+   → Use <span style="color: var(--accent-amber);">Programmatic Tool Calling</span> to process in code
+
+❓ Frequent parameter errors or wrong tool selection?
+   → Add <span style="color: var(--accent-green);">Tool Use Examples</span> for clarity
+
+<strong>Layer incrementally:</strong> Discovery → Execution efficiency → Invocation correctness
+                    </div>
+                </div>
+
+                <h3>Tool Search Tool: When & How</h3>
+
+                <div class="command-list">
+                    <div class="command-item" style="border-left: 3px solid var(--accent-cyan); padding-left: 15px;">
+                        <code style="background: rgba(0, 212, 255, 0.2); border-color: var(--accent-cyan);">When to Use</code>
+                        <ul style="margin-top: 10px; margin-left: 20px; color: var(--text-secondary);">
+                            <li style="margin-bottom: 8px;">Tool definitions exceed <strong>10K tokens</strong></li>
+                            <li style="margin-bottom: 8px;">Accuracy issues with <strong>similar tool names</strong></li>
+                            <li style="margin-bottom: 8px;"><strong>10+ tools</strong> available in the system</li>
+                            <li style="margin-bottom: 8px;">MCP systems with <strong>multiple servers</strong></li>
+                        </ul>
+                    </div>
+
+                    <div class="command-item" style="border-left: 3px solid var(--accent-green); padding-left: 15px;">
+                        <code style="background: rgba(57, 255, 20, 0.2); border-color: var(--accent-green);">Implementation Tips</code>
+                        <ul style="margin-top: 10px; margin-left: 20px; color: var(--text-secondary);">
+                            <li style="margin-bottom: 8px;">Use <strong>clear, descriptive</strong> tool names and descriptions</li>
+                            <li style="margin-bottom: 8px;">Keep <strong>3-5 most-used tools</strong> always loaded; defer the rest</li>
+                            <li style="margin-bottom: 8px;">Add system prompt context about <strong>available tool categories</strong></li>
+                            <li style="margin-bottom: 8px;">Works seamlessly with <strong>prompt caching</strong></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3>Programmatic Tool Calling: When & How</h3>
+
+                <div class="command-list">
+                    <div class="command-item" style="border-left: 3px solid var(--accent-amber); padding-left: 15px;">
+                        <code style="background: rgba(255, 180, 84, 0.2); border-color: var(--accent-amber);">When Beneficial</code>
+                        <ul style="margin-top: 10px; margin-left: 20px; color: var(--text-secondary);">
+                            <li style="margin-bottom: 8px;">Processing <strong>large datasets</strong> for summaries</li>
+                            <li style="margin-bottom: 8px;"><strong>Multi-step workflows</strong> (3+ dependent calls)</li>
+                            <li style="margin-bottom: 8px;"><strong>Filtering/transforming</strong> before Claude sees results</li>
+                            <li style="margin-bottom: 8px;"><strong>Parallel operations</strong> that can run independently</li>
+                            <li style="margin-bottom: 8px;">Tasks where intermediate data <strong>shouldn't influence reasoning</strong></li>
+                        </ul>
+                    </div>
+
+                    <div class="command-item" style="border-left: 3px solid var(--accent-green); padding-left: 15px;">
+                        <code style="background: rgba(57, 255, 20, 0.2); border-color: var(--accent-green);">Implementation Tips</code>
+                        <ul style="margin-top: 10px; margin-left: 20px; color: var(--text-secondary);">
+                            <li style="margin-bottom: 8px;"><strong>Document return formats explicitly</strong> so Claude writes correct parsing logic</li>
+                            <li style="margin-bottom: 8px;">Opt-in tools that can <strong>run in parallel</strong> (independent operations)</li>
+                            <li style="margin-bottom: 8px;">Focus on <strong>idempotent operations</strong> (safe to retry)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3>Tool Use Examples: When & How</h3>
+
+                <div class="command-list">
+                    <div class="command-item" style="border-left: 3px solid var(--accent-green); padding-left: 15px;">
+                        <code style="background: rgba(57, 255, 20, 0.2); border-color: var(--accent-green);">When Most Valuable</code>
+                        <ul style="margin-top: 10px; margin-left: 20px; color: var(--text-secondary);">
+                            <li style="margin-bottom: 8px;"><strong>Complex nested structures</strong> in parameters</li>
+                            <li style="margin-bottom: 8px;">Many <strong>optional parameters</strong> with inclusion patterns</li>
+                            <li style="margin-bottom: 8px;"><strong>Domain-specific conventions</strong> not obvious from schema</li>
+                            <li style="margin-bottom: 8px;"><strong>Disambiguating similar tools</strong></li>
+                        </ul>
+                    </div>
+
+                    <div class="command-item" style="border-left: 3px solid var(--accent-cyan); padding-left: 15px;">
+                        <code style="background: rgba(0, 212, 255, 0.2); border-color: var(--accent-cyan);">Crafting Principles</code>
+                        <ul style="margin-top: 10px; margin-left: 20px; color: var(--text-secondary);">
+                            <li style="margin-bottom: 8px;">Use <strong>realistic data</strong> (actual place names, plausible prices—not "foo" or "test")</li>
+                            <li style="margin-bottom: 8px;">Show <strong>variety</strong>: minimal, partial, and full specification patterns</li>
+                            <li style="margin-bottom: 8px;">Keep <strong>concise</strong>: 1-5 examples per tool</li>
+                            <li style="margin-bottom: 8px;">Only add where <strong>schema doesn't make usage obvious</strong></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3>Common Pitfalls & Solutions</h3>
+
+                <div class="command-list">
+                    <div class="command-item" style="border-left: 3px solid var(--accent-red); padding-left: 15px;">
+                        <code style="background: rgba(255, 71, 87, 0.2); border-color: var(--accent-red);">Context Window Exhaustion</code>
+                        <p style="margin-top: 8px; color: var(--text-secondary);"><strong>Problem:</strong> All tool definitions consumed upfront, leaving minimal space for conversation and reasoning.</p>
+                        <p style="font-size: 0.95rem; color: var(--accent-green); margin-top: 8px;"><strong>Solution:</strong> Use Tool Search Tool to load only relevant tools on-demand, preserving 95% of context window.</p>
+                    </div>
+
+                    <div class="command-item" style="border-left: 3px solid var(--accent-red); padding-left: 15px;">
+                        <code style="background: rgba(255, 71, 87, 0.2); border-color: var(--accent-red);">Intermediate Result Pollution</code>
+                        <p style="margin-top: 8px; color: var(--text-secondary);"><strong>Problem:</strong> Each tool call's result enters context, accumulating irrelevant data that compounds inference overhead.</p>
+                        <p style="font-size: 0.95rem; color: var(--accent-green); margin-top: 8px;"><strong>Solution:</strong> Programmatic Tool Calling processes results in sandboxed code; only final output enters Claude's context.</p>
+                    </div>
+
+                    <div class="command-item" style="border-left: 3px solid var(--accent-red); padding-left: 15px;">
+                        <code style="background: rgba(255, 71, 87, 0.2); border-color: var(--accent-red);">Parameter Ambiguity</code>
+                        <p style="margin-top: 8px; color: var(--text-secondary);"><strong>Problem:</strong> JSON schema defines structure but can't express usage conventions (when to include optional fields, format expectations).</p>
+                        <p style="font-size: 0.95rem; color: var(--accent-green); margin-top: 8px;"><strong>Solution:</strong> Provide concrete examples showing realistic patterns Claude should learn from.</p>
+                    </div>
+                </div>
+
+                <h3>Real-World Example: Budget Compliance</h3>
+
+                <div class="example-box">
+<strong>Traditional Approach (Inefficient):</strong>
+→ Load 2,000+ expense line items (50KB+)
+→ Claude processes all data in context
+→ Manual filtering and reasoning
+→ High token consumption, slow inference
+
+<strong>With Programmatic Tool Calling (Optimized):</strong>
+→ Claude orchestrates parallel tool calls in Python
+→ Filters locally in sandboxed execution
+→ Returns only 2-3 employees exceeding budget (1KB result)
+→ 98% reduction in context usage
+                </div>
+
+                <h3>Applying to Claude Code</h3>
+
+                <div class="best-practices">
+                    <h3>Practical Application</h3>
+                    <ul>
+                        <li><span class="highlight">Use Explore agent</span> instead of running many Grep/Glob searches yourself - it processes results internally and returns only what matters</li>
+                        <li><span class="highlight">Parallelize independent operations</span> - run multiple searches simultaneously when they don't depend on each other</li>
+                        <li><span class="highlight">Be specific in your requests</span> - clear descriptions help Claude select the right tool and parameters</li>
+                        <li><span class="highlight">Provide examples</span> when asking for complex operations - show what you expect</li>
+                        <li><span class="highlight">Use TodoWrite for multi-step tasks</span> - it provides structure similar to tool examples</li>
+                    </ul>
+                </div>
+
+                <h3>Key Metrics from Anthropic's Testing</h3>
+
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 20px;">
+                    <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); padding: 25px; text-align: center;">
+                        <div style="font-family: 'JetBrains Mono', monospace; font-size: 2.5rem; color: var(--accent-cyan); margin-bottom: 10px;">85%</div>
+                        <div style="color: var(--text-secondary); font-size: 0.95rem;">Token reduction with Tool Search Tool</div>
+                    </div>
+                    <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); padding: 25px; text-align: center;">
+                        <div style="font-family: 'JetBrains Mono', monospace; font-size: 2.5rem; color: var(--accent-amber); margin-bottom: 10px;">37%</div>
+                        <div style="color: var(--text-secondary); font-size: 0.95rem;">Average token reduction with Programmatic Calling</div>
+                    </div>
+                    <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); padding: 25px; text-align: center;">
+                        <div style="font-family: 'JetBrains Mono', monospace; font-size: 2.5rem; color: var(--accent-green); margin-bottom: 10px;">72→90%</div>
+                        <div style="color: var(--text-secondary); font-size: 0.95rem;">Accuracy improvement with Tool Examples</div>
+                    </div>
+                </div>
+
+                <div class="tip" style="margin-top: 30px;">
+                    <strong>🎯 Key Insight:</strong> The most impactful optimization is often the simplest: reduce what Claude needs to process. Whether through dynamic tool loading, code-based filtering, or clear examples, the goal is always to minimize noise and maximize signal. This applies directly to Claude Code - use specialized agents (like Explore) that process results internally rather than dumping raw data into context.
                 </div>
             </section>
         </main>
