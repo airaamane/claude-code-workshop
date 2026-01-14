@@ -1,0 +1,9 @@
+# Temporary Claude Code files
+tmpclaude-*
+
+# Node modules (if added later)
+node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db
