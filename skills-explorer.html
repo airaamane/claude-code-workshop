@@ -1,0 +1,1420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skills Explorer — anthropics/skills</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary:    #0a0a0a;
+            --bg-secondary:  #111111;
+            --bg-tertiary:   #1a1a1a;
+            --bg-card:       #141414;
+            --border-color:  #2a2a2a;
+            --border-hover:  #3d3d3d;
+            --text-primary:  #e8e8e8;
+            --text-secondary:#a0a0a0;
+            --text-tertiary: #666;
+            --accent-cyan:   #00d4ff;
+            --accent-amber:  #ffb454;
+            --accent-green:  #39ff14;
+            --accent-red:    #ff4757;
+            --accent-purple: #a78bfa;
+            --accent-pink:   #f472b6;
+            --accent-orange: #fb923c;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ── Animated noise overlay ── */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ── Header ── */
+        header {
+            position: relative;
+            z-index: 10;
+            padding: 60px 40px 40px;
+            border-bottom: 1px solid var(--border-color);
+            background: linear-gradient(180deg, rgba(0,212,255,0.04) 0%, transparent 100%);
+        }
+
+        .header-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+        .header-meta a {
+            color: var(--accent-cyan);
+            text-decoration: none;
+        }
+        .header-meta a:hover { text-decoration: underline; }
+        .header-meta .sep { opacity: 0.4; }
+
+        h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            font-weight: 300;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+            margin-bottom: 12px;
+        }
+        h1 .accent { color: var(--accent-cyan); font-style: italic; }
+
+        .tagline {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+            max-width: 600px;
+            line-height: 1.7;
+        }
+
+        /* ── Stats bar ── */
+        .stats-bar {
+            display: flex;
+            gap: 32px;
+            flex-wrap: wrap;
+        }
+        .stat {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .stat-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            line-height: 1;
+        }
+        .stat-label {
+            font-size: 0.7rem;
+            color: var(--text-tertiary);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .stat:nth-child(2) .stat-value { color: var(--accent-amber); }
+        .stat:nth-child(3) .stat-value { color: var(--accent-green); }
+        .stat:nth-child(4) .stat-value { color: var(--accent-purple); }
+
+        /* ── Controls bar ── */
+        .controls {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            background: rgba(10,10,10,0.92);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 16px 40px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .search-wrap {
+            position: relative;
+            flex: 1;
+            min-width: 220px;
+            max-width: 380px;
+        }
+        .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-tertiary);
+            font-size: 0.85rem;
+            pointer-events: none;
+        }
+        .search-input {
+            width: 100%;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            padding: 10px 14px 10px 38px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .search-input:focus { border-color: var(--accent-cyan); }
+        .search-input::placeholder { color: var(--text-tertiary); }
+
+        .filter-pills {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .pill {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            padding: 7px 14px;
+            border: 1px solid var(--border-color);
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            transition: all 0.15s;
+            white-space: nowrap;
+        }
+        .pill:hover { border-color: var(--border-hover); color: var(--text-primary); }
+        .pill.active {
+            color: var(--bg-primary);
+            border-color: transparent;
+        }
+        .pill[data-cat="all"].active        { background: var(--text-primary); }
+        .pill[data-cat="design"].active      { background: var(--accent-pink); }
+        .pill[data-cat="development"].active { background: var(--accent-cyan); color: var(--bg-primary); }
+        .pill[data-cat="enterprise"].active  { background: var(--accent-amber); }
+        .pill[data-cat="documents"].active   { background: var(--accent-green); }
+
+        .count-badge {
+            margin-left: auto;
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+        }
+
+        /* ── Main grid ── */
+        main {
+            position: relative;
+            z-index: 10;
+            padding: 40px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .category-section { margin-bottom: 60px; }
+        .category-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .category-label {
+            font-size: 0.7rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--text-tertiary);
+        }
+        .category-line {
+            flex: 1;
+            height: 1px;
+            background: var(--border-color);
+        }
+        .category-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        /* ── Skill Card ── */
+        .skill-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 28px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+        .skill-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .skill-card:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        }
+        .skill-card:hover::before { opacity: 1; }
+
+        /* Category accent colors */
+        .skill-card[data-cat="design"]::before      { background: linear-gradient(90deg, var(--accent-pink), var(--accent-purple)); }
+        .skill-card[data-cat="development"]::before { background: linear-gradient(90deg, var(--accent-cyan), var(--accent-green)); }
+        .skill-card[data-cat="enterprise"]::before  { background: linear-gradient(90deg, var(--accent-amber), var(--accent-orange)); }
+        .skill-card[data-cat="documents"]::before   { background: linear-gradient(90deg, var(--accent-green), var(--accent-cyan)); }
+
+        .card-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        .skill-icon {
+            font-size: 1.8rem;
+            line-height: 1;
+        }
+        .skill-badges {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+        .badge {
+            font-size: 0.62rem;
+            padding: 3px 8px;
+            border: 1px solid;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+        .badge-oss   { border-color: rgba(57,255,20,0.4);  color: var(--accent-green);  background: rgba(57,255,20,0.06); }
+        .badge-prop  { border-color: rgba(255,180,84,0.4); color: var(--accent-amber);  background: rgba(255,180,84,0.06); }
+        .badge-new   { border-color: rgba(0,212,255,0.4);  color: var(--accent-cyan);   background: rgba(0,212,255,0.06); }
+
+        .skill-name {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            letter-spacing: -0.01em;
+        }
+        .skill-slug {
+            font-size: 0.7rem;
+            color: var(--text-tertiary);
+            margin-bottom: 12px;
+            letter-spacing: 0.02em;
+        }
+        .skill-desc {
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 20px;
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 400;
+        }
+
+        .card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .trigger-chips {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .chip {
+            font-size: 0.65rem;
+            padding: 3px 8px;
+            background: var(--bg-tertiary);
+            color: var(--text-tertiary);
+            border: 1px solid var(--border-color);
+            letter-spacing: 0.04em;
+        }
+        .expand-btn {
+            font-size: 0.7rem;
+            color: var(--text-tertiary);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-family: 'JetBrains Mono', monospace;
+            padding: 4px 0;
+            transition: color 0.15s;
+            white-space: nowrap;
+        }
+        .expand-btn:hover { color: var(--accent-cyan); }
+
+        /* ── Install section on card ── */
+        .install-strip {
+            margin-top: 16px;
+            padding: 10px 14px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            font-size: 0.72rem;
+            color: var(--text-tertiary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            display: none;
+        }
+        .install-cmd {
+            color: var(--accent-green);
+            font-family: 'JetBrains Mono', monospace;
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .copy-btn {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-tertiary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            padding: 3px 8px;
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+        }
+        .copy-btn:hover { border-color: var(--accent-green); color: var(--accent-green); }
+        .copy-btn.copied { border-color: var(--accent-green); color: var(--accent-green); }
+
+        /* ── Modal ── */
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-backdrop.open { display: flex; }
+
+        .modal {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-hover);
+            max-width: 760px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            animation: modalIn 0.2s ease;
+        }
+        @keyframes modalIn {
+            from { opacity: 0; transform: translateY(16px) scale(0.98); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .modal-header {
+            padding: 32px 36px 24px;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            background: var(--bg-secondary);
+            z-index: 1;
+        }
+        .modal-header-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 8px;
+        }
+        .modal-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2rem;
+            font-weight: 400;
+            line-height: 1.2;
+        }
+        .modal-close {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            padding: 6px 12px;
+            cursor: pointer;
+            transition: all 0.15s;
+            flex-shrink: 0;
+        }
+        .modal-close:hover { border-color: var(--accent-red); color: var(--accent-red); }
+        .modal-slug {
+            font-size: 0.78rem;
+            color: var(--text-tertiary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .modal-body {
+            padding: 28px 36px 36px;
+        }
+
+        .modal-section { margin-bottom: 28px; }
+        .modal-section-title {
+            font-size: 0.68rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--text-tertiary);
+            margin-bottom: 12px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .modal-section p {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1rem;
+            color: var(--text-secondary);
+            line-height: 1.75;
+        }
+
+        .capability-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+        }
+        .capability-item {
+            padding: 10px 14px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .cap-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .install-block {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            padding: 16px 20px;
+        }
+        .install-block-label {
+            font-size: 0.65rem;
+            color: var(--text-tertiary);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        .install-block-cmd {
+            font-size: 0.88rem;
+            color: var(--accent-green);
+            font-family: 'JetBrains Mono', monospace;
+            word-break: break-all;
+        }
+        .install-block + .install-block { margin-top: 12px; }
+
+        .trigger-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .trigger-tag {
+            font-size: 0.72rem;
+            padding: 5px 12px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        .modal-tech {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .tech-tag {
+            font-size: 0.7rem;
+            padding: 4px 10px;
+            border: 1px solid var(--border-color);
+            color: var(--text-tertiary);
+        }
+
+        /* ── How to install section (bottom) ── */
+        .how-to-install {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 36px 40px;
+            margin: 0 40px 40px;
+        }
+        .how-to-install h2 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.8rem;
+            font-weight: 300;
+            margin-bottom: 8px;
+        }
+        .how-to-install p {
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            line-height: 1.7;
+        }
+        .install-methods {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 20px;
+        }
+        .install-method {
+            padding: 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+        }
+        .install-method-title {
+            font-size: 0.75rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-tertiary);
+            margin-bottom: 12px;
+        }
+        .install-method pre {
+            font-size: 0.75rem;
+            color: var(--accent-green);
+            line-height: 1.8;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        /* ── Footer ── */
+        footer {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            padding: 40px;
+            border-top: 1px solid var(--border-color);
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+        }
+        footer a { color: var(--accent-cyan); text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+
+        /* ── Empty state ── */
+        .empty-state {
+            display: none;
+            text-align: center;
+            padding: 80px 40px;
+            color: var(--text-tertiary);
+        }
+        .empty-state-icon { font-size: 3rem; margin-bottom: 16px; opacity: 0.4; }
+        .empty-state-msg { font-size: 0.85rem; }
+
+        /* ── Animations ── */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .skill-card {
+            animation: fadeUp 0.3s ease both;
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 768px) {
+            header, main { padding: 24px 20px; }
+            .controls { padding: 12px 20px; }
+            .how-to-install { margin: 0 20px 40px; padding: 24px 20px; }
+            .modal-header, .modal-body { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ══════════ HEADER ══════════ -->
+<header>
+    <div class="header-meta">
+        <span>⬡ anthropics</span>
+        <span class="sep">/</span>
+        <a href="https://github.com/anthropics/skills" target="_blank">skills</a>
+        <span class="sep">·</span>
+        <span>96.8k ★</span>
+        <span class="sep">·</span>
+        <span>Agent Skills Standard</span>
+    </div>
+
+    <h1>Skills <span class="accent">Explorer</span></h1>
+    <p class="tagline">Browse, filter, and install Claude's official skill library. Skills extend Claude with specialized capabilities — from document creation to generative art, browser testing to MCP server building.</p>
+
+    <div class="stats-bar">
+        <div class="stat">
+            <div class="stat-value" id="total-count">17</div>
+            <div class="stat-label">Skills</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value">4</div>
+            <div class="stat-label">Categories</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value">3</div>
+            <div class="stat-label">Platforms</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value">Apache</div>
+            <div class="stat-label">License (most)</div>
+        </div>
+    </div>
+</header>
+
+<!-- ══════════ CONTROLS ══════════ -->
+<div class="controls">
+    <div class="search-wrap">
+        <span class="search-icon">⌕</span>
+        <input class="search-input" id="search" type="text" placeholder="Search skills..." autocomplete="off">
+    </div>
+
+    <div class="filter-pills">
+        <button class="pill active" data-cat="all">All</button>
+        <button class="pill" data-cat="design">Creative &amp; Design</button>
+        <button class="pill" data-cat="development">Development</button>
+        <button class="pill" data-cat="enterprise">Enterprise</button>
+        <button class="pill" data-cat="documents">Documents</button>
+    </div>
+
+    <span class="count-badge" id="visible-count">17 skills</span>
+</div>
+
+<!-- ══════════ MAIN ══════════ -->
+<main>
+    <div class="empty-state" id="empty-state">
+        <div class="empty-state-icon">∅</div>
+        <div class="empty-state-msg">No skills match your search.</div>
+    </div>
+
+    <!-- CREATIVE & DESIGN -->
+    <div class="category-section" id="cat-design">
+        <div class="category-header">
+            <div class="category-dot" style="background: var(--accent-pink);"></div>
+            <span class="category-label">Creative &amp; Design</span>
+            <div class="category-line"></div>
+        </div>
+        <div class="skills-grid" id="grid-design"></div>
+    </div>
+
+    <!-- DEVELOPMENT & TECHNICAL -->
+    <div class="category-section" id="cat-development">
+        <div class="category-header">
+            <div class="category-dot" style="background: var(--accent-cyan);"></div>
+            <span class="category-label">Development &amp; Technical</span>
+            <div class="category-line"></div>
+        </div>
+        <div class="skills-grid" id="grid-development"></div>
+    </div>
+
+    <!-- ENTERPRISE & COMMUNICATION -->
+    <div class="category-section" id="cat-enterprise">
+        <div class="category-header">
+            <div class="category-dot" style="background: var(--accent-amber);"></div>
+            <span class="category-label">Enterprise &amp; Communication</span>
+            <div class="category-line"></div>
+        </div>
+        <div class="skills-grid" id="grid-enterprise"></div>
+    </div>
+
+    <!-- DOCUMENT SKILLS -->
+    <div class="category-section" id="cat-documents">
+        <div class="category-header">
+            <div class="category-dot" style="background: var(--accent-green);"></div>
+            <span class="category-label">Document Skills</span>
+            <div class="category-line"></div>
+        </div>
+        <div class="skills-grid" id="grid-documents"></div>
+    </div>
+</main>
+
+<!-- ══════════ HOW TO INSTALL ══════════ -->
+<div class="how-to-install">
+    <h2>Installing Skills</h2>
+    <p>Skills work across Claude Code, Claude.ai, and the Claude API. Install from the marketplace or reference the GitHub repo directly.</p>
+    <div class="install-methods">
+        <div class="install-method">
+            <div class="install-method-title">Claude Code — Marketplace</div>
+            <pre>/plugin marketplace add anthropics/skills
+/plugin install &lt;skill-name&gt;</pre>
+        </div>
+        <div class="install-method">
+            <div class="install-method-title">Claude Code — Direct</div>
+            <pre>claude plugin install \
+  anthropics/skills/skills/&lt;skill&gt;</pre>
+        </div>
+        <div class="install-method">
+            <div class="install-method-title">Claude.ai</div>
+            <pre>Settings → Skills → Upload
+Upload your SKILL.md file directly
+(Paid plans)</pre>
+        </div>
+        <div class="install-method">
+            <div class="install-method-title">GitHub Repo</div>
+            <pre>git clone https://github.com/
+  anthropics/skills
+cp -r skills/&lt;skill&gt; .claude/skills/</pre>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════ FOOTER ══════════ -->
+<footer>
+    <p>Skills sourced from <a href="https://github.com/anthropics/skills" target="_blank">github.com/anthropics/skills</a> · <a href="https://agentskills.io" target="_blank">agentskills.io</a> · <a href="claude-code-guide.html">← Back to Guide</a></p>
+    <p style="margin-top: 8px; opacity: 0.5;">Skills are provided for demonstration and educational purposes. Test before production use.</p>
+</footer>
+
+<!-- ══════════ MODAL ══════════ -->
+<div class="modal-backdrop" id="modal-backdrop">
+    <div class="modal" id="modal">
+        <div class="modal-header">
+            <div class="modal-header-top">
+                <div>
+                    <div class="modal-title" id="modal-title">Skill Name</div>
+                    <div class="modal-slug" id="modal-slug">skills/slug</div>
+                </div>
+                <button class="modal-close" onclick="closeModal()">✕ Close</button>
+            </div>
+        </div>
+        <div class="modal-body" id="modal-body"></div>
+    </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+//  SKILLS DATA
+// ══════════════════════════════════════════
+const SKILLS = [
+    // ── Creative & Design ─────────────────
+    {
+        slug: 'algorithmic-art',
+        name: 'Algorithmic Art',
+        cat: 'design',
+        icon: '◈',
+        license: 'oss',
+        badges: ['oss'],
+        desc: 'Create generative, computational art using p5.js with seeded randomness, noise fields, particle systems, and interactive parameter controls.',
+        longDesc: 'Guides Claude through a two-phase creation process: first developing an "algorithmic philosophy" as a computational aesthetic manifesto, then expressing that philosophy through polished p5.js code. Each seed reveals different facets of the same computational system — these are living algorithms, not static images. Output is a single self-contained HTML artifact with seed navigation, tunable parameters, and reproducible randomness.',
+        capabilities: [
+            'p5.js generative art',
+            'Seeded randomness (reproducible)',
+            'Interactive parameter controls',
+            'Seed navigation (prev/next/random)',
+            'Noise fields & particle systems',
+            'Computational philosophy manifesto',
+            'Self-contained HTML output',
+            'Color harmony systems',
+        ],
+        triggers: ['"generate art"', '"create a visual"', '"algorithmic"', '"generative"', '"p5.js"'],
+        tech: ['p5.js', 'HTML/CSS/JS', 'Canvas API'],
+        installCmd: '/plugin install algorithmic-art@anthropic-agent-skills',
+        ghPath: 'skills/algorithmic-art',
+    },
+    {
+        slug: 'canvas-design',
+        name: 'Canvas Design',
+        cat: 'design',
+        icon: '▣',
+        license: 'oss',
+        badges: ['oss'],
+        desc: 'Create original visual art and design compositions in PNG and PDF formats — museum-quality output with intentional spatial communication.',
+        longDesc: 'Canvas Design approaches visual work as a two-phase process: first developing a visual philosophy (an aesthetic movement manifesto), then crafting the masterpiece that expresses it. Output must appear painstakingly labored — the product of countless hours by an expert. Text is used sparingly as visual accent only. Every element must stay within canvas boundaries with professional margins. The skill emphasizes refinement over addition: polish existing composition rather than adding elements.',
+        capabilities: [
+            'PNG and PDF output',
+            'Museum-quality visual composition',
+            'Aesthetic philosophy creation',
+            'Minimal strategic typography',
+            'Professional spatial layout',
+            'Single or multi-page canvases',
+            'Visual hierarchy without words',
+            'Form-based concept communication',
+        ],
+        triggers: ['"create a poster"', '"design a canvas"', '"visual art"', '"generate an image"', '"illustration"'],
+        tech: ['Python', 'reportlab', 'PIL/Pillow', 'Cairo'],
+        installCmd: '/plugin install canvas-design@anthropic-agent-skills',
+        ghPath: 'skills/canvas-design',
+    },
+    {
+        slug: 'frontend-design',
+        name: 'Frontend Design',
+        cat: 'design',
+        icon: '◉',
+        license: 'prop',
+        badges: ['prop'],
+        desc: 'Create distinctive, production-grade frontend interfaces that prioritize genuine design quality — no generic AI aesthetics.',
+        longDesc: 'The Frontend Design skill pushes Claude beyond cookie-cutter layouts. Before writing a line of code, Claude establishes a bold aesthetic direction: purpose, tone, constraints, what makes the design memorable. The skill explicitly warns against Arial, clichéd color schemes, and predictable layouts. Instead it demands distinctive typography, cohesive color schemes, intentional motion and micro-interactions, and unexpected spatial composition. Output is working code (HTML/CSS/JS, React, Vue) that\'s functionally complete and visually striking.',
+        capabilities: [
+            'Distinctive aesthetic direction',
+            'Bold typography selection',
+            'Micro-interactions & animation',
+            'Asymmetric / grid-breaking layouts',
+            'Atmospheric backgrounds',
+            'Production-ready React/Vue/HTML',
+            'Dark & light theme systems',
+            'Responsive mobile-first design',
+        ],
+        triggers: ['"design a UI"', '"create a landing page"', '"build a dashboard"', '"make it look good"', '"frontend"'],
+        tech: ['HTML/CSS/JS', 'React', 'Vue', 'Tailwind', 'CSS animations'],
+        installCmd: '/plugin install frontend-design@anthropic-agent-skills',
+        ghPath: 'skills/frontend-design',
+    },
+    {
+        slug: 'brand-guidelines',
+        name: 'Brand Guidelines',
+        cat: 'design',
+        icon: '◇',
+        license: 'oss',
+        badges: ['oss'],
+        desc: 'Apply official Anthropic brand identity — color palette, typography (Poppins + Lora), accent cycling — to any design artifact.',
+        longDesc: 'Encodes Anthropic\'s visual identity for consistent brand application. Core palette: #141413 (dark), #faf9f5 (light), with orange (#d97757), blue (#6a9bcc), and green (#788c5d) accents. Typography uses Poppins for headings (24pt+) and Lora for body text, with Arial/Georgia fallbacks. The skill handles font selection based on text hierarchy thresholds, cycles accent colors for visual interest, and ensures compatibility when custom fonts aren\'t pre-installed.',
+        capabilities: [
+            'Anthropic color palette',
+            'Poppins + Lora typography',
+            'Automatic font fallbacks',
+            'Accent color cycling',
+            'Size-based font selection',
+            'PPTX brand application',
+            'Consistent identity across artifacts',
+        ],
+        triggers: ['"anthropic brand"', '"brand guidelines"', '"apply our branding"', '"brand colors"'],
+        tech: ['Python', 'python-pptx', 'Poppins', 'Lora'],
+        installCmd: '/plugin install brand-guidelines@anthropic-agent-skills',
+        ghPath: 'skills/brand-guidelines',
+    },
+    {
+        slug: 'theme-factory',
+        name: 'Theme Factory',
+        cat: 'design',
+        icon: '⬡',
+        license: 'oss',
+        badges: ['oss'],
+        desc: 'Generate complete, cohesive UI theme systems from a description, image, or color seed — tokens, variables, and all.',
+        longDesc: 'Theme Factory creates complete design token systems: color scales (primary, neutral, semantic), typography scales, spacing systems, border radii, shadows, and component-level tokens. Input can be a description ("dark cyberpunk"), an image for color extraction, or a seed hex color. Output is framework-agnostic token JSON, CSS custom properties, Tailwind config, or design tool formats.',
+        capabilities: [
+            'Full design token systems',
+            'Color scale generation',
+            'Typography & spacing scales',
+            'CSS custom properties output',
+            'Tailwind config generation',
+            'Dark/light mode variants',
+            'Semantic color mapping',
+            'Image-based color extraction',
+        ],
+        triggers: ['"create a theme"', '"design tokens"', '"color palette"', '"theme system"', '"CSS variables"'],
+        tech: ['CSS', 'JSON', 'Tailwind', 'Design tokens'],
+        installCmd: '/plugin install theme-factory@anthropic-agent-skills',
+        ghPath: 'skills/theme-factory',
+    },
+    {
+        slug: 'slack-gif-creator',
+        name: 'Slack GIF Creator',
+        cat: 'design',
+        icon: '◎',
+        license: 'oss',
+        badges: ['oss'],
+        desc: 'Generate custom animated GIFs optimized for Slack reactions and messages — expressive, looping, and sized correctly.',
+        longDesc: 'Creates animated GIFs designed specifically for Slack: 128×128px for reactions, larger for inline use. Handles frame sequencing, loop timing, color palette optimization for GIF format (256 color limit), and file size constraints. Can create text animations, simple character animations, and abstract motion effects.',
+        capabilities: [
+            'Slack-optimized sizing',
+            '256-color palette optimization',
+            'Looping animation control',
+            'Text & character animations',
+            'File size management',
+            'Reaction vs message sizing',
+            'Frame timing control',
+        ],
+        triggers: ['"slack gif"', '"reaction gif"', '"animated emoji"', '"gif for slack"'],
+        tech: ['Python', 'Pillow', 'gifsicle'],
+        installCmd: '/plugin install slack-gif-creator@anthropic-agent-skills',
+        ghPath: 'skills/slack-gif-creator',
+    },
+
+    // ── Development & Technical ────────────
+    {
+        slug: 'webapp-testing',
+        name: 'Web App Testing',
+        cat: 'development',
+        icon: '⊕',
+        license: 'oss',
+        badges: ['oss'],
+        desc: 'Playwright-based browser automation for local web apps — UI verification, screenshot capture, DOM inspection, and console log analysis.',
+        longDesc: 'Provides a structured toolkit for testing web applications without manual browser interaction. Intelligently chooses between reading static HTML directly vs. spinning up a server for dynamic apps. The critical workflow pattern is Reconnaissance-then-Action: navigate and wait for networkidle, capture screenshots or inspect DOM, discover selectors from rendered state, then execute actions. The skill warns against inspecting the DOM before networkidle — a common cause of flaky tests.',
+        capabilities: [
+            'Playwright browser automation',
+            'Screenshot capture',
+            'DOM inspection & query',
+            'Console log collection',
+            'Server lifecycle management',
+            'Static vs dynamic detection',
+            'Selector discovery',
+            'Network idle waiting',
+        ],
+        triggers: ['"test the UI"', '"check if it works"', '"screenshot"', '"browser test"', '"playwright"', '"verify the page"'],
+        tech: ['Python', 'Playwright', 'Chromium', 'asyncio'],
+        installCmd: '/plugin install webapp-testing@anthropic-agent-skills',
+        ghPath: 'skills/webapp-testing',
+    },
+    {
+        slug: 'mcp-builder',
+        name: 'MCP Builder',
+        cat: 'development',
+        icon: '⊗',
+        license: 'oss',
+        badges: ['oss', 'new'],
+        desc: 'Guided 4-phase workflow for building high-quality Model Context Protocol servers — from planning to tested, production-ready implementation.',
+        longDesc: 'A systematic guide for creating MCP servers that genuinely help LLMs accomplish real-world tasks. Four phases: (1) Research & Planning — understand MCP design principles, choose stack, analyze target API; (2) Implementation — set up project, build infrastructure, implement tools with proper schemas; (3) Review & Test — verify quality and functionality with MCP Inspector; (4) Evaluation — create 10 complex test questions to validate LLM effectiveness. Recommends TypeScript with streamable HTTP for remote servers.',
+        capabilities: [
+            'TypeScript or Python setup',
+            'Tool schema design',
+            'Error handling patterns',
+            'MCP Inspector testing',
+            'Evaluation question generation',
+            'Streamable HTTP transport',
+            'Tool naming conventions',
+            'Input/output schema spec',
+        ],
+        triggers: ['"build an MCP server"', '"create MCP tools"', '"MCP server"', '"model context protocol"'],
+        tech: ['TypeScript', 'Python', 'MCP SDK', 'HTTP/SSE'],
+        installCmd: '/plugin install mcp-builder@anthropic-agent-skills',
+        ghPath: 'skills/mcp-builder',
+    },
+    {
+        slug: 'claude-api',
+        name: 'Claude API',
+        cat: 'development',
+        icon: '⊘',
+        license: 'oss',
+        badges: ['oss'],
+        desc: 'Build applications using the Anthropic Claude API and SDK — streaming, tool use, prompt caching, and multi-turn conversations.',
+        longDesc: 'Provides comprehensive guidance for integrating with the Claude API across all major use cases: simple completions, streaming responses, tool/function calling, extended thinking, prompt caching for cost optimization, multi-turn conversation management, batch processing, and embeddings. Covers both Python and TypeScript SDKs with production patterns for error handling, rate limiting, and cost management.',
+        capabilities: [
+            'Python & TypeScript SDKs',
+            'Streaming responses',
+            'Tool use / function calling',
+            'Extended thinking integration',
+            'Prompt caching patterns',
+            'Multi-turn conversations',
+            'Batch API usage',
+            'Rate limit handling',
+        ],
+        triggers: ['imports `anthropic`', 'imports `@anthropic-ai/sdk`', '"Claude API"', '"Anthropic SDK"', '"call Claude from code"'],
+        tech: ['Python', 'TypeScript', 'anthropic SDK', 'REST API'],
+        installCmd: '/plugin install claude-api@anthropic-agent-skills',
+        ghPath: 'skills/claude-api',
+    },
+    {
+        slug: 'skill-creator',
+        name: 'Skill Creator',
+        cat: 'development',
+        icon: '✦',
+        license: 'oss',
+        badges: ['oss'],
+        desc: 'Build, test, and iterate on custom Claude skills — with a structured eval loop, parallel test runs, and user review workflow.',
+        longDesc: 'A meta-skill for creating other skills. The workflow: capture intent → interview for edge cases → draft SKILL.md → create test cases → run parallel evals (with/without skill) → grade against assertions → iterate based on feedback. Key principle: the skill description is the primary trigger — write it "pushy" with explicit trigger contexts. Progressive disclosure loads only what\'s needed. Explains the "why" rather than relying on rigid caps-lock directives.',
+        capabilities: [
+            'SKILL.md drafting',
+            'Parallel A/B eval runs',
+            'Quantitative benchmarking',
+            'Eval viewer integration',
+            'Trigger description optimization',
+            'Iterative improvement loop',
+            'Platform-specific notes (Code/claude.ai)',
+            'Assertion grading',
+        ],
+        triggers: ['"create a skill"', '"build a skill"', '"new skill"', '"SKILL.md"'],
+        tech: ['Markdown', 'YAML', 'JSON evals', 'Python'],
+        installCmd: '/plugin install skill-creator@anthropic-agent-skills',
+        ghPath: 'skills/skill-creator',
+    },
+    {
+        slug: 'web-artifacts-builder',
+        name: 'Web Artifacts Builder',
+        cat: 'development',
+        icon: '⊞',
+        license: 'oss',
+        badges: ['oss'],
+        desc: 'Build interactive, shareable web artifacts — self-contained HTML/JS apps, visualizations, and tools that run in any browser.',
+        longDesc: 'Specializes in creating self-contained web artifacts: interactive data visualizations, mini-apps, calculators, games, and demos that ship as a single HTML file with no external dependencies. Focuses on portability (no CDN requirements in offline scenarios), performance (minimal footprint), and shareability. Produces artifacts suitable for embedding in claude.ai\'s artifact system or sharing as standalone files.',
+        capabilities: [
+            'Self-contained HTML output',
+            'Zero-dependency web apps',
+            'Interactive visualizations',
+            'D3.js / Chart.js integration',
+            'Game mechanics',
+            'Form & calculator apps',
+            'Shareable single-file output',
+            'Claude.ai artifact compatible',
+        ],
+        triggers: ['"web app artifact"', '"interactive visualization"', '"shareable HTML"', '"mini app"', '"single-file app"'],
+        tech: ['HTML', 'CSS', 'Vanilla JS', 'D3.js', 'Canvas'],
+        installCmd: '/plugin install web-artifacts-builder@anthropic-agent-skills',
+        ghPath: 'skills/web-artifacts-builder',
+    },
+
+    // ── Enterprise & Communication ─────────
+    {
+        slug: 'internal-comms',
+        name: 'Internal Comms',
+        cat: 'enterprise',
+        icon: '◳',
+        license: 'oss',
+        badges: ['oss'],
+        desc: 'Write seven types of organizational communications — 3P updates, newsletters, FAQs, status reports, incident reports — in company-approved formats.',
+        longDesc: 'Structures internal communications with organization-approved templates. Supports seven communication types: 3P (Progress/Plans/Problems) updates, company newsletters, FAQ responses, status reports, leadership updates, project updates, and incident reports. Three specialized templates exist for 3P updates, newsletters, and FAQs; a general template handles the rest. Asks for clarification when communication types don\'t align with guidelines.',
+        capabilities: [
+            '3P (Progress/Plans/Problems)',
+            'Company newsletters',
+            'FAQ responses',
+            'Status reports',
+            'Leadership updates',
+            'Project updates',
+            'Incident reports',
+            'Template-based formatting',
+        ],
+        triggers: ['"write a status update"', '"internal newsletter"', '"3P update"', '"incident report"', '"all-hands update"'],
+        tech: ['Markdown templates', 'YAML config'],
+        installCmd: '/plugin install internal-comms@anthropic-agent-skills',
+        ghPath: 'skills/internal-comms',
+    },
+    {
+        slug: 'doc-coauthoring',
+        name: 'Doc Co-authoring',
+        cat: 'enterprise',
+        icon: '◱',
+        license: 'oss',
+        badges: ['oss'],
+        desc: 'Collaboratively write, edit, and review long-form documents with tracked changes, version awareness, and editorial consistency.',
+        longDesc: 'Enables deep document collaboration: reading existing docs to match established voice and style, applying tracked changes, managing multi-author workflows, maintaining editorial consistency across long documents, and working with outline structures before diving into prose. Handles Google Docs, Word, Markdown, and plain text. Particularly useful for specs, RFCs, reports, and policy documents.',
+        capabilities: [
+            'Voice & style matching',
+            'Tracked change management',
+            'Multi-author consistency',
+            'Outline-first workflow',
+            'Section-by-section editing',
+            'Editorial review pass',
+            'Long-form document support',
+            'RFC & spec writing',
+        ],
+        triggers: ['"co-author a doc"', '"edit this document"', '"improve my writing"', '"review and suggest changes"', '"help write a spec"'],
+        tech: ['Markdown', 'Google Docs', 'DOCX', 'Plain text'],
+        installCmd: '/plugin install doc-coauthoring@anthropic-agent-skills',
+        ghPath: 'skills/doc-coauthoring',
+    },
+
+    // ── Document Skills ────────────────────
+    {
+        slug: 'pdf',
+        name: 'PDF',
+        cat: 'documents',
+        icon: '⊟',
+        license: 'prop',
+        badges: ['prop'],
+        desc: 'Full PDF lifecycle: create, extract text/tables, merge, split, rotate, watermark, fill forms, encrypt, and OCR scanned documents.',
+        longDesc: 'A comprehensive PDF toolkit drawing on multiple Python libraries. Uses pypdf for structural operations (merge, split, rotate, encrypt), pdfplumber for layout-preserving text and table extraction, reportlab for programmatic PDF creation, and CLI tools like pdftk and qpdf for batch operations. Avoids Unicode subscript/superscript characters that render as boxes in ReportLab — uses XML markup tags instead. Handles scanned document OCR and complex form filling.',
+        capabilities: [
+            'Create PDFs with reportlab',
+            'Text extraction (layout-preserving)',
+            'Table extraction with pdfplumber',
+            'Merge / split / rotate',
+            'Watermark application',
+            'Form filling',
+            'Password encryption',
+            'OCR on scanned docs',
+            'Image extraction',
+            'Batch CLI operations',
+        ],
+        triggers: ['.pdf files', '"extract from PDF"', '"create a PDF"', '"merge PDFs"', '"PDF form"', '"OCR"'],
+        tech: ['Python', 'pypdf', 'pdfplumber', 'reportlab', 'pdftk', 'tesseract'],
+        installCmd: '/plugin install pdf@anthropic-agent-skills',
+        ghPath: 'skills/pdf',
+    },
+    {
+        slug: 'docx',
+        name: 'DOCX (Word)',
+        cat: 'documents',
+        icon: '⊠',
+        license: 'prop',
+        badges: ['prop'],
+        desc: 'Create, edit, and analyze Word documents — tables, headings, TOC, tracked changes — with correct formatting every time.',
+        longDesc: 'A Word document specialist that understands DOCX as a ZIP archive of XML files. Creates documents with the docx JS library (globally installed via npm), enforcing critical rules: DXA units for tables (never percentages), LevelFormat.BULLET for lists (never manual Unicode), US Letter vs A4 page size awareness, PageBreak wrapped in Paragraph objects. Edits existing files via unpack → XML edit → repack workflow. Never skips QA.',
+        capabilities: [
+            'Document creation from scratch',
+            'Tables with proper widths',
+            'Heading hierarchy & TOC',
+            'Numbered & bulleted lists',
+            'Tracked change acceptance',
+            'Page break management',
+            'Style application',
+            'Unpack/repack XML editing',
+            'Legacy .doc conversion',
+        ],
+        triggers: ['.docx files', '"create a Word doc"', '"generate a report in Word"', '"edit this Word file"'],
+        tech: ['JavaScript', 'docx npm', 'pandoc', 'Python unpack/repack'],
+        installCmd: '/plugin install docx@anthropic-agent-skills',
+        ghPath: 'skills/docx',
+    },
+    {
+        slug: 'pptx',
+        name: 'PPTX (PowerPoint)',
+        cat: 'documents',
+        icon: '⊡',
+        license: 'prop',
+        badges: ['prop'],
+        desc: 'Create and edit compelling PowerPoint presentations — visual layouts, charts, icon grids, brand colors — with mandatory QA passes.',
+        longDesc: 'A presentation specialist focused on avoiding boring slides. Every slide must have visual elements (images, charts, icons, or shapes — no text-only layouts). Uses varied layouts: two-column, icon+text rows, grids, half-bleed images. Personality-driven font pairings (e.g., Georgia + Calibri) with proper sizing hierarchy. Creates from scratch with pptxgenjs or edits via unpack → XML → repack. Critical QA: "Assume there are problems. Your job is to find them." Requires visual inspection via subagents and never declares success without at least one complete QA cycle.',
+        capabilities: [
+            'From-scratch creation (pptxgenjs)',
+            'Template editing (unpack/repack)',
+            'Visual layout variety',
+            'Chart and data visualization',
+            'Icon + text row layouts',
+            'Half-bleed image slides',
+            'Brand color application',
+            'Mandatory visual QA pass',
+            'Content verification (markitdown)',
+        ],
+        triggers: ['.pptx files', '"create a deck"', '"presentation slides"', '"PowerPoint"', '"make slides"'],
+        tech: ['JavaScript', 'pptxgenjs', 'Python', 'markitdown', 'LibreOffice'],
+        installCmd: '/plugin install pptx@anthropic-agent-skills',
+        ghPath: 'skills/pptx',
+    },
+    {
+        slug: 'xlsx',
+        name: 'XLSX (Excel)',
+        cat: 'documents',
+        icon: '⊞',
+        license: 'prop',
+        badges: ['prop'],
+        desc: 'Create and edit Excel spreadsheets with proper formulas, financial model standards, color-coded cells, and zero formula errors.',
+        longDesc: 'A spreadsheet expert with strict financial modeling standards. Uses Excel formulas instead of hardcoded Python-calculated values. Color coding: blue for inputs, black for formulas, green for internal links, red for external links. Currency as $#,##0, percentages as 0.0%, negatives as parentheses. All assumptions in separate cells using references. Documents hardcoded values with source citations (document type, date, URL). Always recalculates formulas post-creation via recalc.py and verifies zero formula errors (#REF!, #DIV/0!, etc.).',
+        capabilities: [
+            'Formula-based models (no hardcoding)',
+            'Financial model color coding',
+            'Currency & percentage formatting',
+            'Zero formula error guarantee',
+            'Assumption cell separation',
+            'Post-creation formula recalc',
+            'CSV/TSV conversion',
+            'Data cleaning & analysis',
+            'Template convention preservation',
+        ],
+        triggers: ['.xlsx .xls .csv .tsv files', '"create a spreadsheet"', '"financial model"', '"Excel"', '"data analysis spreadsheet"'],
+        tech: ['Python', 'pandas', 'openpyxl', 'recalc.py'],
+        installCmd: '/plugin install xlsx@anthropic-agent-skills',
+        ghPath: 'skills/xlsx',
+    },
+];
+
+// ══════════════════════════════════════════
+//  RENDER
+// ══════════════════════════════════════════
+
+function buildCard(skill) {
+    const badgeHtml = skill.badges.map(b => {
+        if (b === 'oss')  return '<span class="badge badge-oss">Apache 2.0</span>';
+        if (b === 'prop') return '<span class="badge badge-prop">Source-Available</span>';
+        if (b === 'new')  return '<span class="badge badge-new">New</span>';
+        return '';
+    }).join('');
+
+    const triggerHtml = skill.triggers.slice(0, 3).map(t =>
+        `<span class="chip">${t}</span>`
+    ).join('');
+
+    const card = document.createElement('div');
+    card.className = 'skill-card';
+    card.dataset.cat = skill.cat;
+    card.dataset.slug = skill.slug;
+    card.innerHTML = `
+        <div class="card-top">
+            <span class="skill-icon">${skill.icon}</span>
+            <div class="skill-badges">${badgeHtml}</div>
+        </div>
+        <div class="skill-name">${skill.name}</div>
+        <div class="skill-slug">skills/${skill.slug}</div>
+        <div class="skill-desc">${skill.desc}</div>
+        <div class="card-footer">
+            <div class="trigger-chips">${triggerHtml}</div>
+            <button class="expand-btn">Details →</button>
+        </div>
+        <div class="install-strip">
+            <span class="install-cmd">${skill.installCmd}</span>
+            <button class="copy-btn" onclick="copyCmd(this, '${skill.installCmd}')">Copy</button>
+        </div>
+    `;
+    card.addEventListener('click', () => openModal(skill));
+    card.querySelector('.expand-btn').addEventListener('click', e => {
+        e.stopPropagation();
+        openModal(skill);
+    });
+    return card;
+}
+
+function renderAll() {
+    const cats = ['design', 'development', 'enterprise', 'documents'];
+    cats.forEach(cat => {
+        const grid = document.getElementById(`grid-${cat}`);
+        grid.innerHTML = '';
+        SKILLS.filter(s => s.cat === cat).forEach((skill, i) => {
+            const card = buildCard(skill);
+            card.style.animationDelay = `${i * 0.05}s`;
+            grid.appendChild(card);
+        });
+    });
+    updateCount();
+}
+
+function updateCount() {
+    const visible = document.querySelectorAll('.skill-card:not([style*="display: none"])').length;
+    document.getElementById('visible-count').textContent = `${visible} skill${visible !== 1 ? 's' : ''}`;
+    document.getElementById('total-count').textContent = SKILLS.length;
+
+    // Show/hide category sections
+    ['design','development','enterprise','documents'].forEach(cat => {
+        const grid = document.getElementById(`grid-${cat}`);
+        const section = document.getElementById(`cat-${cat}`);
+        const visibleInCat = grid.querySelectorAll('.skill-card:not([style*="display: none"])').length;
+        section.style.display = visibleInCat === 0 ? 'none' : '';
+    });
+
+    const anyVisible = document.querySelectorAll('.skill-card:not([style*="display: none"])').length;
+    document.getElementById('empty-state').style.display = anyVisible === 0 ? 'block' : 'none';
+}
+
+// ── Filter ──────────────────────────────
+let activeCat = 'all';
+let searchQuery = '';
+
+document.querySelectorAll('.pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+        document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        activeCat = pill.dataset.cat;
+        applyFilter();
+    });
+});
+
+document.getElementById('search').addEventListener('input', e => {
+    searchQuery = e.target.value.toLowerCase().trim();
+    applyFilter();
+});
+
+function applyFilter() {
+    document.querySelectorAll('.skill-card').forEach(card => {
+        const cat = card.dataset.cat;
+        const slug = card.dataset.slug;
+        const skill = SKILLS.find(s => s.slug === slug);
+
+        const catMatch = activeCat === 'all' || cat === activeCat;
+
+        let searchMatch = true;
+        if (searchQuery) {
+            const haystack = [
+                skill.name, skill.slug, skill.desc, skill.longDesc,
+                ...skill.capabilities, ...skill.triggers, ...skill.tech
+            ].join(' ').toLowerCase();
+            searchMatch = haystack.includes(searchQuery);
+        }
+
+        card.style.display = (catMatch && searchMatch) ? '' : 'none';
+    });
+    updateCount();
+}
+
+// ── Modal ────────────────────────────────
+function openModal(skill) {
+    const catColors = {
+        design: 'var(--accent-pink)',
+        development: 'var(--accent-cyan)',
+        enterprise: 'var(--accent-amber)',
+        documents: 'var(--accent-green)',
+    };
+    const color = catColors[skill.cat] || 'var(--accent-cyan)';
+
+    document.getElementById('modal-title').textContent = skill.name;
+    document.getElementById('modal-slug').textContent = `anthropics/skills / ${skill.ghPath}`;
+
+    const capItems = skill.capabilities.map(c => `
+        <div class="capability-item">
+            <div class="cap-dot" style="background:${color}"></div>
+            ${c}
+        </div>
+    `).join('');
+
+    const triggerItems = skill.triggers.map(t => `<span class="trigger-tag">${t}</span>`).join('');
+    const techItems = skill.tech.map(t => `<span class="tech-tag">${t}</span>`).join('');
+
+    const licenseNote = skill.license === 'oss'
+        ? '<strong style="color: var(--accent-green);">Apache 2.0</strong> — open source, free to use and modify.'
+        : '<strong style="color: var(--accent-amber);">Source-Available</strong> — shared as reference implementation; see LICENSE.txt for terms.';
+
+    document.getElementById('modal-body').innerHTML = `
+        <div class="modal-section">
+            <div class="modal-section-title">About</div>
+            <p>${skill.longDesc}</p>
+        </div>
+        <div class="modal-section">
+            <div class="modal-section-title">Capabilities</div>
+            <div class="capability-grid">${capItems}</div>
+        </div>
+        <div class="modal-section">
+            <div class="modal-section-title">Trigger Phrases</div>
+            <div class="trigger-list">${triggerItems}</div>
+        </div>
+        <div class="modal-section">
+            <div class="modal-section-title">Tech Stack</div>
+            <div class="modal-tech">${techItems}</div>
+        </div>
+        <div class="modal-section">
+            <div class="modal-section-title">Install</div>
+            <div class="install-block">
+                <div class="install-block-label">Claude Code (marketplace)</div>
+                <div class="install-block-cmd">${skill.installCmd}</div>
+            </div>
+            <div class="install-block">
+                <div class="install-block-label">GitHub source</div>
+                <div class="install-block-cmd">https://github.com/anthropics/skills/tree/main/${skill.ghPath}</div>
+            </div>
+            <div class="install-block">
+                <div class="install-block-label">Copy to project</div>
+                <div class="install-block-cmd">cp -r &lt;skills-repo&gt;/${skill.ghPath} .claude/skills/</div>
+            </div>
+        </div>
+        <div class="modal-section">
+            <div class="modal-section-title">License</div>
+            <p style="font-family: 'JetBrains Mono', monospace; font-size: 0.82rem;">${licenseNote}</p>
+        </div>
+    `;
+
+    document.getElementById('modal-backdrop').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+    document.getElementById('modal-backdrop').classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+document.getElementById('modal-backdrop').addEventListener('click', e => {
+    if (e.target === document.getElementById('modal-backdrop')) closeModal();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// ── Copy command ─────────────────────────
+function copyCmd(btn, cmd) {
+    navigator.clipboard.writeText(cmd).then(() => {
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+            btn.textContent = 'Copy';
+            btn.classList.remove('copied');
+        }, 1800);
+    }).catch(() => {
+        btn.textContent = 'Error';
+    });
+}
+
+// ── Init ─────────────────────────────────
+renderAll();
+</script>
+</body>
+</html>
