@@ -615,16 +615,22 @@
         <nav>
             <a href="#tools">Core Tools</a>
             <a href="#agents">Subagents</a>
+            <a href="#custom-agents">Custom Agents</a>
             <a href="#skills">Skills</a>
             <a href="#lsp">LSP</a>
             <a href="#memory">Memory</a>
             <a href="#slash-commands">Commands</a>
             <a href="#hooks">Hooks</a>
+            <a href="#git-worktrees">Worktrees</a>
+            <a href="#session-management">Sessions</a>
+            <a href="#extended-thinking">Thinking</a>
+            <a href="#mcp">MCP</a>
+            <a href="#references">@ References</a>
             <a href="#workflows">Workflows</a>
             <a href="#best-practices">Best Practices</a>
             <a href="#quick-reference">Quick Reference</a>
-            <a href="#long-running-agents">Long-Running Agents</a>
-            <a href="#advanced-tool-use">Advanced Tool Use</a>
+            <a href="#long-running-agents">Long-Running</a>
+            <a href="#advanced-tool-use">Advanced Tools</a>
         </nav>
 
         <main>
@@ -1301,68 +1307,189 @@ paths:
                 <h2>Slash Commands</h2>
                 <p style="margin-bottom: 30px; color: var(--text-secondary); font-size: 1.1rem;">Slash commands are built-in CLI features that provide access to tools and information. Type them directly in your prompt or use them as shortcuts.</p>
 
+                <h3>Session & Navigation</h3>
                 <div class="command-list">
                     <div class="command-item">
-                        <code>/help</code>
-                        <p>Display help information about Claude Code features, commands, and capabilities. Use this to explore available tools and get usage guidance.</p>
-                        <p style="font-size: 0.95rem; color: var(--text-tertiary); margin-top: 8px;"><strong>Use when:</strong> You need guidance on Claude Code features or want to discover available commands.</p>
+                        <code>/resume</code>
+                        <p>Open an interactive session picker to resume a previous conversation. Navigate with arrow keys, press <code>P</code> to preview, <code>R</code> to rename, <code>B</code> to filter by current branch. Can also resume by name: <code>/resume auth-refactor</code>.</p>
                     </div>
+                    <div class="command-item">
+                        <code>/fork</code>
+                        <p>Create an independent branch of the current conversation. Useful for exploring alternative approaches without affecting the main session.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>/rename &lt;name&gt;</code>
+                        <p>Set a descriptive name for the current session. Name appears on the prompt bar. Best practice: rename early when starting work on a distinct task.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>/clear</code>
+                        <p>Clear the current conversation history and start fresh in the same session.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>/compact</code>
+                        <p>Manually compact/summarize the conversation to free up context window space. Auto-compaction happens automatically, but this lets you trigger it on demand.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>/context</code>
+                        <p>Show context window usage analysis with token counts, tool usage breakdown, and optimization tips. Helps you understand what's consuming your context budget.</p>
+                    </div>
+                </div>
 
+                <h3>Model & Performance</h3>
+                <div class="command-list">
+                    <div class="command-item">
+                        <code>/model</code>
+                        <p>Switch between available Claude models (Opus 4.6, Sonnet 4.6, Haiku 4.5). Shows the currently active model. Use when you need more power or faster responses.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>/effort [low|medium|high]</code>
+                        <p>Control how deeply Claude thinks before responding. Symbols: ○ (low) ◐ (medium) ● (high). Use <code>/effort auto</code> to reset to default. Works with Opus 4.6 and Sonnet 4.6 adaptive reasoning.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>/fast</code>
+                        <p>Enable fast mode for quicker responses. Useful when you need speed over depth on Opus 4.6.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>/cost</code>
+                        <p>Display token usage and pricing for the current session. Track cumulative API costs.</p>
+                    </div>
+                </div>
+
+                <h3>Planning & Tasks</h3>
+                <div class="command-list">
+                    <div class="command-item">
+                        <code>/plan [description]</code>
+                        <p>Enter Plan Mode where Claude analyzes and plans before executing. Optional description: <code>/plan fix the auth bug</code>. In Plan Mode, Claude uses read-only tools and asks clarifying questions before proposing changes. Press <code>Ctrl+G</code> to open the plan in your editor.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>/batch &lt;description&gt;</code>
+                        <p>Decompose a large task into 5–30 independent units, spin up isolated git worktrees for each, execute them in parallel, and create pull requests automatically. Ideal for large-scale refactors or feature implementations across many files.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>/simplify</code>
+                        <p>Spawn parallel review agents after implementation to analyze changed files from different angles — checking for reuse opportunities, code quality, and efficiency. Run before committing to improve code quality.</p>
+                    </div>
                     <div class="command-item">
                         <code>/tasks</code>
-                        <p>List all running or completed background tasks, showing their IDs and status. Use this to check on long-running operations and retrieve task outputs.</p>
-                        <p style="font-size: 0.95rem; color: var(--text-tertiary); margin-top: 8px;"><strong>Use when:</strong> You need to monitor background processes or retrieve results from previous tasks.</p>
+                        <p>View all running or completed background tasks, their IDs and status.</p>
                     </div>
+                    <div class="command-item">
+                        <code>/todo / /todos</code>
+                        <p>View and manage the current task list. Shows in-progress and pending items.</p>
+                    </div>
+                </div>
 
+                <h3>Code & Git</h3>
+                <div class="command-list">
                     <div class="command-item">
                         <code>/commit</code>
                         <p>Invoke the Commit skill to create well-structured git commits with intelligent message generation.</p>
-                        <p style="font-size: 0.95rem; color: var(--text-tertiary); margin-top: 8px;"><strong>Use when:</strong> You want to create a git commit with best practices and proper formatting.</p>
                     </div>
-
                     <div class="command-item">
-                        <code>/review-pr</code>
-                        <p>Invoke the Review PR skill to analyze and provide comprehensive feedback on pull requests.</p>
-                        <p style="font-size: 0.95rem; color: var(--text-tertiary); margin-top: 8px;"><strong>Use when:</strong> You need an automated code review with specific recommendations and quality checks.</p>
+                        <code>/review-pr [number]</code>
+                        <p>Invoke the Review PR skill for comprehensive pull request analysis with specific recommendations.</p>
                     </div>
-
                     <div class="command-item">
-                        <code>/pdf</code>
-                        <p>Invoke the PDF skill to generate or process PDF documents.</p>
-                        <p style="font-size: 0.95rem; color: var(--text-tertiary); margin-top: 8px;"><strong>Use when:</strong> You need to create reports, documentation, or convert content to PDF format.</p>
+                        <code>/security-review</code>
+                        <p>Audit recent git changes for security vulnerabilities, insecure patterns, and compliance issues. Runs a dedicated security analysis agent over your diff.</p>
                     </div>
-
                     <div class="command-item">
-                        <code>/clear</code>
-                        <p>Clear the CLI interface or reset the current session state. Built-in CLI command.</p>
-                        <p style="font-size: 0.95rem; color: var(--text-tertiary); margin-top: 8px;"><strong>Use when:</strong> You want to clean up the display or start fresh.</p>
+                        <code>/copy</code>
+                        <p>Interactive picker for copying code blocks from the conversation. Press <code>w</code> to write directly to a file instead of copying to clipboard (useful over SSH).</p>
+                    </div>
+                    <div class="command-item">
+                        <code>/export</code>
+                        <p>Export the current conversation to a file.</p>
+                    </div>
+                </div>
+
+                <h3>Configuration & Utilities</h3>
+                <div class="command-list">
+                    <div class="command-item">
+                        <code>/config</code>
+                        <p>Configure Claude Code settings interactively with search. Replaces the deprecated <code>/output-style</code>. Toggle thinking mode, update preferences, manage tool settings.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>/permissions</code>
+                        <p>Manage tool permissions — review allowed/denied tools and permission rules.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>/mcp</code>
+                        <p>Manage MCP (Model Context Protocol) servers. Enable/disable servers, reconnect, view status. See also: <code>claude mcp add</code> CLI command.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>/memory</code>
+                        <p>View and manage auto-memory entries. Open memory files for editing.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>/voice</code>
+                        <p>Enable/disable voice input mode. Uses push-to-talk (spacebar by default). Supports 20+ languages.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>/keybindings</code>
+                        <p>Customize keyboard shortcuts for Claude Code. Supports chord sequences and per-context configuration (chat, bash, vim).</p>
+                    </div>
+                    <div class="command-item">
+                        <code>/color &lt;color&gt;</code>
+                        <p>Set the prompt bar color for the current session. Useful for visually distinguishing multiple open sessions.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>/doctor</code>
+                        <p>Diagnose system and installation issues. Detects unreachable permission rules, misconfigured MCP servers, and other common problems.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>/stats</code>
+                        <p>Display session statistics with optional date range filtering. Track usage over time.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>/feedback</code>
+                        <p>Report issues directly to GitHub. Opens the issue tracker with context pre-filled.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>/help</code>
+                        <p>Display all available commands and features. Lists commands alphabetically with descriptions.</p>
                     </div>
                 </div>
 
                 <div class="tip">
-                    <strong>💡 Tip:</strong> Not all slash commands work in all contexts. Type <code>/help</code> to see which commands are available in your environment. Some commands may require specific setup or dependencies.
+                    <strong>💡 Keyboard Shortcuts:</strong> <code>Shift+Tab</code> cycles through permission modes (Normal → Auto-Accept → Plan Mode). <code>Ctrl+O</code> toggles verbose/thinking mode. <code>Ctrl+G</code> opens the current plan in your editor. <code>Option+T</code> / <code>Alt+T</code> toggles extended thinking on/off.
                 </div>
 
-                <h3>Slash Command Examples</h3>
+                <h3>Slash Command Quick Reference</h3>
 
                 <div class="example-box">
-# Check available skills and commands
-/help
+# Switch to Opus for a complex task
+/model
 
-# Monitor your running tasks
-/tasks
+# Set high effort for deep reasoning
+/effort high
 
-# Create a git commit
-/commit
+# Start planning before a complex refactor
+/plan refactor the authentication system
 
-# Get a PR review
-/review-pr 42
+# Run parallel batch work across worktrees
+/batch update all API endpoints to use the new error format
 
-# Generate a PDF report
-/pdf --title "Code Analysis Report"
+# Review and simplify after implementing
+/simplify
 
-# Clear the interface
-/clear
+# Check context window usage
+/context
+
+# Compact conversation to free up space
+/compact
+
+# Set up desktop notifications via hooks
+/config → or edit ~/.claude/settings.json directly
+
+# Diagnose any issues
+/doctor
+
+# Resume a named session
+/resume auth-refactor
+
+# Security audit before shipping
+/security-review
                 </div>
             </section>
 
@@ -1389,91 +1516,172 @@ paths:
 
                 <div class="command-list">
                     <div class="command-item">
-                        <code style="background: rgba(255, 71, 87, 0.2); border-color: var(--accent-red);">user-prompt-submit-hook</code>
-                        <p>Triggered when a user submits a prompt. Treat responses as coming directly from the user.</p>
-                        <p style="font-size: 0.95rem; color: var(--text-tertiary); margin-top: 8px;"><strong>Use for:</strong> Pre-processing user input, validation, or notifications.</p>
+                        <code style="background: rgba(255, 180, 84, 0.2); border-color: var(--accent-amber);">PreToolUse</code>
+                        <p>Runs after Claude creates tool parameters but <strong>before</strong> the tool executes. Can return <code>allow</code>, <code>deny</code>, <code>ask</code>, <code>updatedInput</code>, or <code>additionalContext</code> to modify behavior.</p>
+                        <p style="font-size: 0.95rem; color: var(--text-tertiary); margin-top: 8px;"><strong>Use for:</strong> Blocking dangerous operations, logging tool usage, injecting additional context, auto-approving known-safe patterns.</p>
                     </div>
 
                     <div class="command-item">
-                        <code style="background: rgba(57, 255, 20, 0.2); border-color: var(--accent-green);">tool-call-hook</code>
-                        <p>Triggered when a tool is invoked. Execute commands or validation based on specific tool usage.</p>
-                        <p style="font-size: 0.95rem; color: var(--text-tertiary); margin-top: 8px;"><strong>Use for:</strong> Logging tool usage, running security checks, or triggering related processes.</p>
+                        <code style="background: rgba(57, 255, 20, 0.2); border-color: var(--accent-green);">PostToolUse</code>
+                        <p>Runs immediately after a tool completes successfully. Receives the tool name and result.</p>
+                        <p style="font-size: 0.95rem; color: var(--text-tertiary); margin-top: 8px;"><strong>Use for:</strong> Auto-formatting after edits, running tests after file changes, logging tool results.</p>
                     </div>
 
                     <div class="command-item">
-                        <code style="background: rgba(0, 212, 255, 0.2); border-color: var(--accent-cyan);">post-edit-hook</code>
-                        <p>Triggered after a file edit. Run formatters, linters, or tests on modified files automatically.</p>
-                        <p style="font-size: 0.95rem; color: var(--text-tertiary); margin-top: 8px;"><strong>Use for:</strong> Auto-formatting, linting, or running related tests.</p>
+                        <code style="background: rgba(0, 212, 255, 0.2); border-color: var(--accent-cyan);">UserPromptSubmit</code>
+                        <p>Triggered when the user submits a prompt, before Claude processes it.</p>
+                        <p style="font-size: 0.95rem; color: var(--text-tertiary); margin-top: 8px;"><strong>Use for:</strong> Pre-processing user input, injecting context, validation, audit logging.</p>
                     </div>
 
                     <div class="command-item">
-                        <code style="background: rgba(255, 180, 84, 0.2); border-color: var(--accent-amber);">pre-commit-hook</code>
-                        <p>Triggered before a git commit. Validate code, run checks, or format files before committing.</p>
-                        <p style="font-size: 0.95rem; color: var(--text-tertiary); margin-top: 8px;"><strong>Use for:</strong> Code quality gates, formatting enforcement, or security scanning.</p>
+                        <code style="background: rgba(255, 71, 87, 0.2); border-color: var(--accent-red);">Stop</code>
+                        <p>Runs when the main Claude Code agent finishes responding. Receives <code>last_assistant_message</code>.</p>
+                        <p style="font-size: 0.95rem; color: var(--text-tertiary); margin-top: 8px;"><strong>Use for:</strong> Post-response automation, triggering CI, sending notifications when Claude finishes a task.</p>
                     </div>
 
                     <div class="command-item">
-                        <code style="background: rgba(57, 255, 20, 0.2); border-color: var(--accent-green);">post-bash-hook</code>
-                        <p>Triggered after a bash command completes. React to command output or chain related operations.</p>
-                        <p style="font-size: 0.95rem; color: var(--text-tertiary); margin-top: 8px;"><strong>Use for:</strong> Test result processing, build notifications, or cleanup operations.</p>
+                        <code style="background: rgba(167, 139, 250, 0.2); border-color: #a78bfa;">Notification</code>
+                        <p>Fires whenever Claude is waiting for permission, idle and ready for input, or completing authentication. Use <code>matcher</code> to filter: <code>permission_prompt</code>, <code>idle_prompt</code>, <code>auth_success</code>, <code>elicitation_dialog</code>.</p>
+                        <p style="font-size: 0.95rem; color: var(--text-tertiary); margin-top: 8px;"><strong>Use for:</strong> Desktop notifications so you know when Claude needs attention or finishes work.</p>
+                    </div>
+
+                    <div class="command-item">
+                        <code style="background: rgba(57, 255, 20, 0.2); border-color: var(--accent-green);">SessionStart / SessionEnd</code>
+                        <p>Run at the start and end of a Claude Code session. <code>SessionEnd</code> timeout is configurable via <code>CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS</code>.</p>
+                        <p style="font-size: 0.95rem; color: var(--text-tertiary); margin-top: 8px;"><strong>Use for:</strong> Environment setup, cleanup, session audit logs, generating summaries.</p>
+                    </div>
+
+                    <div class="command-item">
+                        <code style="background: rgba(0, 212, 255, 0.2); border-color: var(--accent-cyan);">PostCompact</code>
+                        <p>Fires after the conversation is compacted/summarized to manage context window usage.</p>
+                        <p style="font-size: 0.95rem; color: var(--text-tertiary); margin-top: 8px;"><strong>Use for:</strong> Saving snapshots, logging compaction events.</p>
+                    </div>
+
+                    <div class="command-item">
+                        <code style="background: rgba(255, 180, 84, 0.2); border-color: var(--accent-amber);">WorktreeCreate / WorktreeRemove</code>
+                        <p>Triggered when a git worktree is created or removed. For non-git VCS (SVN, Perforce), configure these to provide custom worktree logic.</p>
+                        <p style="font-size: 0.95rem; color: var(--text-tertiary); margin-top: 8px;"><strong>Use for:</strong> Custom worktree setup, monorepo initialization, environment bootstrapping per worktree.</p>
+                    </div>
+
+                    <div class="command-item">
+                        <code style="background: rgba(167, 139, 250, 0.2); border-color: #a78bfa;">TaskCompleted / SubagentStop</code>
+                        <p>Fires when a background task completes or a subagent stops. <code>SubagentStop</code> receives <code>last_assistant_message</code>.</p>
+                        <p style="font-size: 0.95rem; color: var(--text-tertiary); margin-top: 8px;"><strong>Use for:</strong> Multi-agent coordination, notifying when parallel agents finish.</p>
                     </div>
                 </div>
 
                 <h3>Configuring Hooks</h3>
 
-                <div class="best-practices">
-                    <h3>Hook Configuration Steps</h3>
-                    <ul>
-                        <li><span class="highlight">Access Settings:</span> Navigate to Claude Code settings/configuration</li>
-                        <li><span class="highlight">Define Hooks:</span> Add hook definitions with event type and shell command</li>
-                        <li><span class="highlight">Test Hooks:</span> Verify hooks execute correctly with sample events</li>
-                        <li><span class="highlight">Monitor Hooks:</span> Check hook outputs for errors or unexpected behavior</li>
-                        <li><span class="highlight">Debug Issues:</span> If hooks block actions, review the hook output and adjust the command</li>
-                    </ul>
+                <div class="example-box">
+<strong>Hook configuration in ~/.claude/settings.json (or .claude/settings.json for project):</strong>
+
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx prettier --write $CLAUDE_FILE_PATH 2>/dev/null || true"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo \"Running: $CLAUDE_TOOL_INPUT_COMMAND\" >> ~/.claude/audit.log"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "idle_prompt",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "notify-send 'Claude Code' 'Task complete — ready for input'"
+          }
+        ]
+      }
+    ]
+  }
+}
+                </div>
+
+                <h3>HTTP Hooks</h3>
+
+                <div class="workflow-section" style="border-left-color: var(--accent-amber);">
+                    <p style="margin-bottom: 15px; color: var(--text-secondary);">Instead of shell commands, hooks can <strong style="color: var(--accent-amber);">POST JSON to a URL</strong> and receive JSON back. Useful for webhook integrations, CI/CD triggers, or enterprise audit systems.</p>
+                    <div class="example-box">
+{
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "http",
+            "url": "https://your-server.com/claude-webhook",
+            "headers": {
+              "Authorization": "Bearer $MY_WEBHOOK_TOKEN",
+              "Content-Type": "application/json"
+            },
+            "allowedEnvVars": ["MY_WEBHOOK_TOKEN"]
+          }
+        ]
+      }
+    ]
+  }
+}
+                    </div>
+                    <p style="margin-top: 15px; color: var(--text-tertiary);">HTTP hooks support env var interpolation in headers via <code>allowedEnvVars</code>. The hook receives event data as JSON and can return JSON to influence behavior.</p>
                 </div>
 
                 <h3>Hook Examples</h3>
 
                 <div class="example-box">
-# Post-edit hook: Auto-format TypeScript files
-post-edit-hook: "if [[ $FILE == *.ts ]]; then npx prettier --write $FILE; fi"
+<strong>Pattern 1: Auto-format on edit (PostToolUse)</strong>
+matcher: "Edit|Write|NotebookEdit"
+command: "npx prettier --write \"$CLAUDE_FILE_PATH\" 2>/dev/null || true"
 
-# Pre-commit hook: Run tests before committing
-pre-commit-hook: "npm test && npm run lint"
+<strong>Pattern 2: Block dangerous commands (PreToolUse on Bash)</strong>
+→ Return exit code 2 + stderr to block and show message to Claude
 
-# Post-bash hook: Show test results summary
-post-bash-hook: "if [[ $COMMAND == npm\ test ]]; then echo 'Tests completed'; fi"
+<strong>Pattern 3: Desktop notification when Claude is idle</strong>
+Notification matcher: "idle_prompt"
+macOS: "osascript -e 'display notification \"Claude is ready\" with title \"Claude Code\"'"
+Linux:  "notify-send 'Claude Code' 'Ready for your next prompt'"
 
-# Tool-call hook: Log all Read operations
-tool-call-hook: "if [[ $TOOL == 'Read' ]]; then echo \"Read: $FILE\" >> .claude-log; fi"
+<strong>Pattern 4: Audit log every tool call</strong>
+PreToolUse matcher: "" (all tools)
+command: "jq -r '[.tool_name, .tool_input | tostring] | join(\" \")' >> ~/.claude/audit.log"
+
+<strong>Pattern 5: Run tests after code changes</strong>
+PostToolUse matcher: "Edit|Write"
+command: "npm test --silent 2>&1 | tail -5 || true"
                 </div>
 
                 <div class="tip">
                     <strong>⚠️ Important:</strong> Hooks can block actions if they fail or take too long. If you encounter unexpected blocking behavior, check your hooks configuration. You can disable or adjust hooks in settings if they cause issues.
                 </div>
 
-                <h3>Common Hook Patterns</h3>
+                <h3>Hook Return Values (PreToolUse)</h3>
 
                 <div class="example-box">
-<strong>Pattern 1: Automatic Testing</strong>
-post-edit-hook: "npm test"
-→ Runs tests automatically after any file edit
+<strong>PreToolUse hooks can control tool execution by exit code + stdout JSON:</strong>
 
-<strong>Pattern 2: Code Quality</strong>
-pre-commit-hook: "npm run lint && npm run format"
-→ Ensures code passes linting before commits
-
-<strong>Pattern 3: Build Verification</strong>
-post-bash-hook: "if [[ $COMMAND == npm\ test ]]; then npm run build; fi"
-→ Builds after successful tests
-
-<strong>Pattern 4: Audit & Security</strong>
-tool-call-hook: "npm audit fix || true"
-→ Audits dependencies regularly
-
-<strong>Pattern 5: Documentation</strong>
-pre-commit-hook: "npm run generate-docs"
-→ Regenerates documentation before commits
+Exit 0 + no output  → Allow (proceed normally)
+Exit 0 + {"decision": "allow"}     → Explicitly allow
+Exit 0 + {"decision": "deny", "reason": "..."}  → Block with message shown to Claude
+Exit 0 + {"decision": "ask", "message": "..."}  → Prompt user to approve/deny
+Exit 0 + {"additionalContext": "..."} → Inject extra context before tool runs
+Exit 2 + stderr text → Block and show stderr as error to Claude
                 </div>
 
                 <div class="best-practices">
@@ -2056,6 +2264,567 @@ npm run test  # or equivalent verification
                     <strong>🎯 Key Insight:</strong> The most impactful optimization is often the simplest: reduce what Claude needs to process. Whether through dynamic tool loading, code-based filtering, or clear examples, the goal is always to minimize noise and maximize signal. This applies directly to Claude Code - use specialized agents (like Explore) that process results internally rather than dumping raw data into context.
                 </div>
             </section>
+            <!-- GIT WORKTREES SECTION -->
+            <section id="git-worktrees">
+                <h2>Git Worktrees</h2>
+                <p style="margin-bottom: 30px; color: var(--text-secondary); font-size: 1.1rem;">Run multiple Claude sessions simultaneously on the same repo without collisions. Each session gets its own branch and working directory, sharing the same git history and remote connections.</p>
+
+                <h3>Why Worktrees?</h3>
+
+                <div class="workflow-section" style="border-left-color: var(--accent-cyan);">
+                    <p style="margin-bottom: 15px; color: var(--text-secondary);">Without worktrees, two Claude sessions working on the same repo would overwrite each other's changes. With worktrees:</p>
+                    <ul style="margin-left: 20px; color: var(--text-secondary);">
+                        <li style="margin-bottom: 8px;">Work on a feature in one session while Claude fixes a bug in another</li>
+                        <li style="margin-bottom: 8px;">Run <code>/batch</code> to spawn dozens of parallel agents, each in isolation</li>
+                        <li style="margin-bottom: 8px;">Test a risky change without touching your main working directory</li>
+                        <li style="margin-bottom: 8px;">Each worktree has its own files and branch, zero context bleed</li>
+                    </ul>
+                </div>
+
+                <h3>Using the --worktree Flag</h3>
+
+                <div class="example-box">
+<strong>Start Claude in a new isolated worktree:</strong>
+
+# Creates .claude/worktrees/feature-auth/ with branch worktree-feature-auth
+claude --worktree feature-auth
+
+# Start another session in a separate worktree simultaneously
+claude --worktree bugfix-123
+
+# Auto-generate a random name
+claude --worktree
+# → Creates something like .claude/worktrees/bright-running-fox/
+
+# Also available as short flag
+claude -w feature-auth
+                </div>
+
+                <div class="example-box">
+<strong>Worktree lifecycle:</strong>
+
+# Worktrees created at: &lt;repo&gt;/.claude/worktrees/&lt;name&gt;/
+# Branch name:           worktree-&lt;name&gt;
+# Branches from:         default remote branch
+
+# On exit:
+# → No changes: worktree and branch removed automatically
+# → Changes exist: Claude prompts keep or remove
+
+# Add to .gitignore to keep main repo clean:
+.claude/worktrees/
+                </div>
+
+                <h3>Subagent Worktrees</h3>
+
+                <div class="workflow-section">
+                    <p style="margin-bottom: 15px; color: var(--text-secondary);">Configure subagents to each run in their own worktree for parallel work without conflicts:</p>
+                    <div class="example-box">
+<strong>In .claude/agents/my-agent.md frontmatter:</strong>
+
+---
+name: feature-builder
+description: Builds isolated features in parallel
+isolation: worktree
+model: sonnet
+---
+
+Your agent system prompt here...
+                    </div>
+                    <p style="margin-top: 15px; color: var(--text-secondary);">Or just tell Claude: <em>"use worktrees for your agents"</em> — it handles setup automatically. Each subagent gets its own worktree, cleaned up when done.</p>
+                </div>
+
+                <h3>Manual Worktree Management</h3>
+
+                <div class="example-box">
+# Create worktree with a new branch (outside Claude)
+git worktree add ../project-feature-a -b feature-a
+
+# Create worktree from existing branch
+git worktree add ../project-bugfix bugfix-123
+
+# Start Claude in the worktree
+cd ../project-feature-a && claude
+
+# List all worktrees
+git worktree list
+
+# Clean up when done
+git worktree remove ../project-feature-a
+                </div>
+
+                <div class="tip">
+                    <strong>🔑 Key Insight:</strong> Worktrees + <code>/batch</code> = your force multiplier. Batch decomposes a task into parallel units, each running in its own worktree, each creating its own PR. What would take hours serially completes in minutes.
+                </div>
+            </section>
+
+            <!-- SESSION MANAGEMENT SECTION -->
+            <section id="session-management">
+                <h2>Session Management</h2>
+                <p style="margin-bottom: 30px; color: var(--text-secondary); font-size: 1.1rem;">Claude Code saves every conversation locally. Resume where you left off, fork conversations for experimentation, and organize work across multiple named sessions.</p>
+
+                <h3>Starting & Resuming Sessions</h3>
+
+                <div class="example-box">
+<strong>CLI flags for session control:</strong>
+
+# Continue the most recent session in current directory
+claude --continue
+
+# Open interactive session picker
+claude --resume
+
+# Resume a specific named session
+claude --resume auth-refactor
+
+# Start a new session with a name
+claude -n "payment-integration"
+
+# Resume sessions linked to a specific PR
+claude --from-pr 123
+
+# Start in Plan Mode (read-only exploration first)
+claude --permission-mode plan
+                </div>
+
+                <h3>Session Picker Keyboard Shortcuts</h3>
+
+                <div class="command-list">
+                    <div class="command-item">
+                        <code>↑ / ↓</code>
+                        <p>Navigate between sessions in the picker</p>
+                    </div>
+                    <div class="command-item">
+                        <code>P</code>
+                        <p>Preview session content before resuming</p>
+                    </div>
+                    <div class="command-item">
+                        <code>R</code>
+                        <p>Rename the highlighted session</p>
+                    </div>
+                    <div class="command-item">
+                        <code>/</code>
+                        <p>Search/filter sessions by name</p>
+                    </div>
+                    <div class="command-item">
+                        <code>B</code>
+                        <p>Filter to sessions from your current git branch</p>
+                    </div>
+                    <div class="command-item">
+                        <code>A</code>
+                        <p>Toggle between current directory and all projects</p>
+                    </div>
+                </div>
+
+                <h3>Naming Best Practices</h3>
+
+                <div class="best-practices">
+                    <h3>Keep Sessions Findable</h3>
+                    <ul>
+                        <li><span class="highlight">Name sessions early:</span> <code>/rename auth-refactor</code> when starting work on a distinct task</li>
+                        <li><span class="highlight">Descriptive names beat timestamps:</span> "payment-integration" finds in 2 seconds, "explain this function" never</li>
+                        <li><span class="highlight">PR linking:</span> When you run <code>gh pr create</code>, the session links automatically — resume with <code>--from-pr 123</code></li>
+                        <li><span class="highlight">Forked sessions</span> are grouped in the picker under their root session for easy navigation</li>
+                    </ul>
+                </div>
+
+                <h3>Session Forking & Rewinding</h3>
+
+                <div class="example-box">
+# Fork the current conversation to explore an alternative approach
+# (from within an active session)
+/fork
+
+# Forked sessions appear grouped in the picker under the original
+# Great for: "what if we did X instead?" without losing the main thread
+                </div>
+
+                <h3>Headless / Non-Interactive Mode</h3>
+
+                <div class="example-box">
+<strong>Use Claude in scripts and CI/CD pipelines:</strong>
+
+# Run a single prompt and exit
+claude -p "explain the auth bug in src/auth.ts"
+
+# Continue the most recent session non-interactively
+claude --continue --print "what files did you change?"
+
+# Pipe data through Claude
+cat build-error.txt | claude -p "explain the root cause of this error"
+
+# Structured output for scripts
+claude -p "analyze for bugs" --output-format json > analysis.json
+claude -p "parse errors" --output-format stream-json   # real-time JSON stream
+
+# Start in Plan Mode headless
+claude --permission-mode plan -p "analyze auth and suggest improvements"
+                </div>
+            </section>
+
+            <!-- EXTENDED THINKING & EFFORT SECTION -->
+            <section id="extended-thinking">
+                <h2>Extended Thinking & Effort Levels</h2>
+                <p style="margin-bottom: 30px; color: var(--text-secondary); font-size: 1.1rem;">Claude can reason through complex problems step-by-step before responding. Opus 4.6 and Sonnet 4.6 use <em>adaptive reasoning</em> — dynamically allocating thinking based on task complexity and your effort setting.</p>
+
+                <h3>Effort Levels</h3>
+
+                <div class="tool-grid">
+                    <div class="tool-card" style="border-left-color: var(--accent-green);">
+                        <h3 style="color: var(--accent-green);">○ Low</h3>
+                        <p>Fast responses with minimal reasoning. Best for simple questions, lookups, small edits, and conversational exchanges.</p>
+                        <div class="usage">/effort low</div>
+                    </div>
+                    <div class="tool-card" style="border-left-color: var(--accent-amber);">
+                        <h3 style="color: var(--accent-amber);">◐ Medium</h3>
+                        <p>Balanced reasoning depth. The default for most tasks — Claude thinks before responding without over-spending tokens.</p>
+                        <div class="usage">/effort medium (default)</div>
+                    </div>
+                    <div class="tool-card" style="border-left-color: var(--accent-red);">
+                        <h3 style="color: var(--accent-red);">● High</h3>
+                        <p>Deep reasoning for complex architectural decisions, hard bugs, multi-step planning, and tradeoff analysis. Use <code>ultrathink</code> in your prompt for one-off high effort.</p>
+                        <div class="usage">/effort high  or  "ultrathink about this"</div>
+                    </div>
+                </div>
+
+                <h3>Configuring Thinking</h3>
+
+                <div class="command-list">
+                    <div class="command-item">
+                        <code>Ctrl+O</code>
+                        <p>Toggle verbose mode to see Claude's internal reasoning displayed as gray italic text. Essential for understanding complex decisions.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>Option+T / Alt+T</code>
+                        <p>Toggle extended thinking on/off for the current session (all models). May require terminal Option key configuration.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>/effort auto</code>
+                        <p>Reset effort to the default adaptive mode.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>ultrathink</code>
+                        <p>Include the word "ultrathink" anywhere in your prompt to set effort to high for just that turn — without permanently changing your effort setting.</p>
+                    </div>
+                </div>
+
+                <div class="example-box">
+<strong>Environment variable controls:</strong>
+
+# Set effort level globally
+export CLAUDE_CODE_EFFORT_LEVEL=high
+
+# Limit thinking tokens on older models
+export MAX_THINKING_TOKENS=10000
+
+# Disable thinking entirely (any model)
+export MAX_THINKING_TOKENS=0
+
+# Disable adaptive reasoning on Opus/Sonnet 4.x (use fixed budget)
+export CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING=1
+                </div>
+
+                <div class="tip">
+                    <strong>💡 When to Use High Effort:</strong> Complex architectural decisions, challenging bugs with multiple potential causes, multi-file refactors, security analysis, and evaluating tradeoffs between approaches. Note: you're billed for all thinking tokens used.
+                </div>
+            </section>
+
+            <!-- MCP INTEGRATION SECTION -->
+            <section id="mcp">
+                <h2>MCP Integration</h2>
+                <p style="margin-bottom: 30px; color: var(--text-secondary); font-size: 1.1rem;">Model Context Protocol (MCP) connects Claude to databases, APIs, and 3,000+ external integrations. Configure MCP servers to extend Claude beyond file reading and bash commands.</p>
+
+                <h3>Managing MCP Servers</h3>
+
+                <div class="example-box">
+<strong>CLI commands for MCP management:</strong>
+
+# Add an MCP server
+claude mcp add my-server --url https://mcp-server.example.com
+
+# Add a local stdio server
+claude mcp add local-db -- node ./mcp-server.js
+
+# List configured servers
+claude mcp list
+
+# Get details for a specific server
+claude mcp get my-server
+
+# View all MCP servers and status
+/mcp
+
+# Toggle a server on/off for this session
+/mcp enable my-server
+/mcp disable my-server
+
+# Force reconnection
+/mcp reconnect my-server
+                </div>
+
+                <h3>Using MCP Resources with @</h3>
+
+                <div class="example-box">
+<strong>Reference MCP resources directly in your prompts with @server:resource:</strong>
+
+# GitHub MCP
+"Show me the data from @github:repos/owner/repo/issues"
+
+# Database MCP
+"Analyze the schema at @postgres:tables/users"
+
+# Slack MCP
+"Summarize @slack:channels/engineering from today"
+
+# MCP resources are fetched and included in context automatically
+                </div>
+
+                <h3>claude.ai MCP Servers in CLI</h3>
+
+                <div class="workflow-section">
+                    <p style="margin-bottom: 15px; color: var(--text-secondary);">MCP servers configured in your <strong>claude.ai account</strong> are automatically available in the CLI. No reconfiguration needed:</p>
+                    <div class="example-box">
+# MCP connectors from your claude.ai account work automatically in Claude Code
+
+# To opt out:
+export ENABLE_CLAUDEAI_MCP_SERVERS=false
+
+# Or in settings.json:
+{ "ENABLE_CLAUDEAI_MCP_SERVERS": false }
+                    </div>
+                </div>
+
+                <h3>MCP OAuth Authentication</h3>
+
+                <div class="best-practices">
+                    <h3>Authentication Features</h3>
+                    <ul>
+                        <li>OAuth flow supported with <span class="highlight">step-up auth</span> when elevated permissions are needed</li>
+                        <li><span class="highlight">Pre-configured OAuth</span> credentials for popular services (Slack, GitHub, etc.)</li>
+                        <li>Custom OAuth discovery via <code>oauth.authServerMetadataUrl</code></li>
+                        <li><span class="highlight">Manual URL paste fallback</span> if browser redirect fails (useful in remote environments)</li>
+                        <li>MCP tools auto-discovered via <code>list_changed</code> notifications — no restart required</li>
+                    </ul>
+                </div>
+
+                <h3>Popular MCP Integrations</h3>
+
+                <div class="tool-grid">
+                    <div class="tool-card" style="border-left-color: var(--accent-cyan);">
+                        <h3 style="color: var(--accent-cyan);">GitHub</h3>
+                        <p>Read/write issues, PRs, repos, code search.</p>
+                        <div class="usage">@github:repos/owner/repo/pulls</div>
+                    </div>
+                    <div class="tool-card" style="border-left-color: var(--accent-amber);">
+                        <h3 style="color: var(--accent-amber);">Databases</h3>
+                        <p>PostgreSQL, MySQL, SQLite — query and explore schemas.</p>
+                        <div class="usage">@postgres:tables/users</div>
+                    </div>
+                    <div class="tool-card" style="border-left-color: var(--accent-green);">
+                        <h3 style="color: var(--accent-green);">Slack</h3>
+                        <p>Read channels, messages, search conversations.</p>
+                        <div class="usage">@slack:channels/engineering</div>
+                    </div>
+                    <div class="tool-card" style="border-left-color: var(--accent-cyan);">
+                        <h3 style="color: var(--accent-cyan);">Sentry / Observability</h3>
+                        <p>Read errors, traces, and alerts directly in your coding session.</p>
+                        <div class="usage">@sentry:issues/recent</div>
+                    </div>
+                </div>
+
+                <div class="tip">
+                    <strong>🔌 Tool Search:</strong> When many MCP servers are connected, Claude automatically uses <code>MCPSearch</code> to find the right tool on demand — keeping context lean. Enable explicitly with <code>ENABLE_TOOL_SEARCH=true</code> if using <code>ANTHROPIC_BASE_URL</code>.
+                </div>
+            </section>
+
+            <!-- CUSTOM AGENTS SECTION -->
+            <section id="custom-agents">
+                <h2>Custom Agents</h2>
+                <p style="margin-bottom: 30px; color: var(--text-secondary); font-size: 1.1rem;">Beyond built-in agents, you can define your own specialized agents in <code>.claude/agents/</code>. Agents have their own system prompt, tools, model, and can run in isolation via worktrees.</p>
+
+                <h3>Creating a Custom Agent</h3>
+
+                <div class="example-box">
+<strong>Create .claude/agents/security-reviewer.md:</strong>
+
+---
+name: security-reviewer
+description: Reviews code changes for security vulnerabilities, OWASP issues, and insecure patterns. Use when asked to review PRs or audit new code.
+model: opus
+tools: Read, Glob, Grep, Bash
+isolation: worktree
+---
+
+You are a security-focused code reviewer. When called:
+1. Read all changed files
+2. Check for OWASP Top 10 vulnerabilities
+3. Look for hardcoded secrets, SQL injection, XSS, CSRF
+4. Review authentication and authorization logic
+5. Report findings with file:line references and severity ratings
+                </div>
+
+                <h3>Agent Frontmatter Reference</h3>
+
+                <div class="command-list">
+                    <div class="command-item">
+                        <code>name:</code>
+                        <p>Unique identifier for the agent (used in Task tool calls and /agents picker)</p>
+                    </div>
+                    <div class="command-item">
+                        <code>description:</code>
+                        <p>When Claude should use this agent. Used for automatic delegation — be specific about trigger conditions.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>model: opus | sonnet | haiku</code>
+                        <p>Override the model for this agent. Use <code>opus</code> for complex reasoning, <code>haiku</code> for fast/cheap operations.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>tools:</code>
+                        <p>Comma-separated list of allowed tools. Limit to what the agent actually needs for least-privilege security.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>isolation: worktree</code>
+                        <p>Run the agent in its own git worktree. Enables safe parallel execution without file conflicts.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>background: true</code>
+                        <p>Always run this agent in the background. Use for monitoring, polling, or long-running tasks.</p>
+                    </div>
+                </div>
+
+                <div class="example-box">
+<strong>Using custom agents:</strong>
+
+# View all configured agents
+/agents
+
+# Claude automatically delegates when descriptions match:
+"review my recent code changes for security issues"
+→ Auto-routes to security-reviewer agent if description matches
+
+# Explicitly invoke a specific agent
+"use the security-reviewer agent to check src/auth/"
+
+# From the Agent tool in code:
+Task(description="Security review", subagent_type="security-reviewer")
+                </div>
+
+                <h3>Agent Memory</h3>
+
+                <div class="best-practices">
+                    <h3>Persistent Agent State</h3>
+                    <ul>
+                        <li>Configure <code>agent.memory: user</code> for memories shared across all sessions</li>
+                        <li>Configure <code>agent.memory: project</code> for project-scoped persistent memory</li>
+                        <li>Configure <code>agent.memory: local</code> for session-only memory (default)</li>
+                        <li>Project configs and auto-memory are <span class="highlight">shared across git worktrees</span> of the same repository</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- @ REFERENCES & CONTEXT SECTION -->
+            <section id="references">
+                <h2>@ References & Context</h2>
+                <p style="margin-bottom: 30px; color: var(--text-secondary); font-size: 1.1rem;">Use the @ symbol to quickly include files, directories, and external resources without waiting for Claude to search for them.</p>
+
+                <h3>@ Reference Types</h3>
+
+                <div class="command-list">
+                    <div class="command-item">
+                        <code>@src/utils/auth.js</code>
+                        <p>Include the full content of a file in the conversation. Relative or absolute paths both work.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>@src/components/</code>
+                        <p>Include a directory listing (file names and info, not full contents) for context.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>@server:resource</code>
+                        <p>Fetch data from a connected MCP server. Format: <code>@github:repos/owner/repo/issues</code>.</p>
+                    </div>
+                </div>
+
+                <div class="example-box">
+<strong>@ references in practice:</strong>
+
+# Include a file for context
+"Explain the logic in @src/utils/auth.js"
+
+# Compare two files
+"What's different between @src/v1/parser.ts and @src/v2/parser.ts?"
+
+# Reference multiple files
+"How do @src/models/user.ts and @src/services/userService.ts interact?"
+
+# Reference a directory for structure overview
+"What's in @src/components?"
+
+# Include MCP data
+"Are there any critical issues in @sentry:issues/recent?"
+
+# Note: @ references in CLAUDE.md also work for imports
+# See @README.md for project overview
+                </div>
+
+                <h3>Permission Modes</h3>
+
+                <div class="tool-grid">
+                    <div class="tool-card" style="border-left-color: var(--accent-cyan);">
+                        <h3 style="color: var(--accent-cyan);">Normal Mode (Ask)</h3>
+                        <p>Default. Claude asks for permission before file edits, bash commands, and other potentially impactful operations.</p>
+                        <div class="usage">Default — use for unknown codebases</div>
+                    </div>
+                    <div class="tool-card" style="border-left-color: var(--accent-green);">
+                        <h3 style="color: var(--accent-green);">Auto-Accept Edits</h3>
+                        <p>Claude edits files and reads without asking. Still asks for bash/destructive operations. Toggle with <code>Shift+Tab</code>.</p>
+                        <div class="usage">⏵⏵ accept edits on (shown in prompt footer)</div>
+                    </div>
+                    <div class="tool-card" style="border-left-color: var(--accent-amber);">
+                        <h3 style="color: var(--accent-amber);">Plan Mode</h3>
+                        <p>Read-only exploration. Claude analyzes and plans but makes no changes without explicit approval. Ideal for understanding complex codebases safely.</p>
+                        <div class="usage">⏸ plan mode on  |  --permission-mode plan</div>
+                    </div>
+                </div>
+
+                <div class="example-box">
+<strong>Configure default permission mode:</strong>
+
+# In .claude/settings.json
+{
+  "permissions": {
+    "defaultMode": "plan"
+  }
+}
+
+# Or start with specific mode
+claude --permission-mode plan
+claude --permission-mode acceptEdits
+
+# Cycle through modes during session
+Shift+Tab → Normal → Auto-Accept → Plan Mode → Normal...
+                </div>
+
+                <h3>Auto-Memory System</h3>
+
+                <div class="workflow-section" style="border-left-color: var(--accent-green);">
+                    <p style="margin-bottom: 15px; color: var(--text-secondary);">Beyond CLAUDE.md, Claude can <strong style="color: var(--accent-green);">automatically record memories</strong> between sessions — things it learns about your preferences, project patterns, and common tasks.</p>
+                    <div class="example-box">
+# Manage auto-memory
+/memory
+
+# Configure storage location
+{ "autoMemoryDirectory": "~/.claude/memories" }
+
+# Last-modified timestamps on memory files help Claude
+# prioritize fresh context over stale memories
+
+# Disable automatic memory (minimal mode)
+export CLAUDE_CODE_SIMPLE=1
+# Disables: skills, memory, agents, MCP, hooks, and CLAUDE.md
+                    </div>
+                </div>
+            </section>
+
         </main>
 
         <footer>
