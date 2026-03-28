@@ -633,6 +633,8 @@
             <a href="#advanced-tool-use">Advanced Tools</a>
             <a href="#env-vars">Env Vars</a>
             <a href="#plugins">Plugins</a>
+            <a href="#auto-mode">Auto Mode</a>
+            <a href="#channels">Channels</a>
             <a href="#agent-teams">Agent Teams</a>
         </nav>
 
@@ -3211,6 +3213,286 @@ claude plugin update
 
                 <div class="tip">
                     <strong>Desktop Install:</strong> The Claude Code desktop app lets you browse and install plugins without using the terminal. Plugins from configured marketplaces (including the official Anthropic marketplace) appear in a visual browser.
+                </div>
+            </section>
+
+            <!-- AUTO MODE SECTION -->
+            <section id="auto-mode">
+                <h2>Auto Mode (Research Preview)</h2>
+                <p style="margin-bottom: 30px; color: var(--text-secondary); font-size: 1.1rem;">Auto mode lets Claude execute actions without permission prompts. A background classifier (Sonnet 4.6) reviews every action before it runs, blocking anything that escalates beyond scope, targets untrusted infrastructure, or appears driven by prompt injection.</p>
+
+                <h3>How It Works</h3>
+
+                <div class="workflow-section" style="border-left-color: var(--accent-cyan);">
+                    <p style="margin-bottom: 15px; color: var(--text-secondary);">Two layers of defense protect your session:</p>
+                    <div class="tool-grid">
+                        <div class="tool-card" style="border-left-color: var(--accent-cyan);">
+                            <h3 style="color: var(--accent-cyan);">Input Layer</h3>
+                            <p>A server-side prompt-injection probe scans tool outputs before they enter the agent's context.</p>
+                            <div class="usage">Scans files, web pages, CLI output</div>
+                        </div>
+                        <div class="tool-card" style="border-left-color: var(--accent-amber);">
+                            <h3 style="color: var(--accent-amber);">Output Layer</h3>
+                            <p>A transcript classifier (Sonnet 4.6) evaluates each action against decision criteria before it executes. Runs in two stages: fast single-token filter, then chain-of-thought reasoning if flagged.</p>
+                            <div class="usage">Sees user messages + tool calls only</div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Action Evaluation Order</h3>
+
+                <div class="command-list">
+                    <div class="command-item">
+                        <code>1. Permission rules</code>
+                        <p>Actions matching your allow/deny rules resolve immediately &mdash; classifier is never called.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>2. Auto-approve safe actions</code>
+                        <p>Read-only actions and file edits within your working directory are auto-approved without classifier overhead.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>3. Classifier evaluation</code>
+                        <p>Everything else goes to the classifier. It reads your CLAUDE.md, user messages, and tool calls (but <strong>never</strong> tool results &mdash; hostile content can't manipulate it).</p>
+                    </div>
+                    <div class="command-item">
+                        <code>4. Block → retry</code>
+                        <p>If blocked, Claude receives the reason and attempts an alternative approach automatically.</p>
+                    </div>
+                </div>
+
+                <h3>What's Blocked vs Allowed by Default</h3>
+
+                <div class="tool-grid">
+                    <div class="tool-card" style="border-left-color: var(--accent-red);">
+                        <h3 style="color: var(--accent-red);">Blocked by Default</h3>
+                        <p>
+                            &bull; Downloading and executing code (<code>curl | bash</code>)<br>
+                            &bull; Sending sensitive data to external endpoints<br>
+                            &bull; Production deploys and migrations<br>
+                            &bull; Mass deletion on cloud storage<br>
+                            &bull; Granting IAM or repo permissions<br>
+                            &bull; Force push or push to <code>main</code><br>
+                            &bull; Irreversibly destroying pre-existing files
+                        </p>
+                    </div>
+                    <div class="tool-card" style="border-left-color: var(--accent-green);">
+                        <h3 style="color: var(--accent-green);">Allowed by Default</h3>
+                        <p>
+                            &bull; Local file ops in working directory<br>
+                            &bull; Installing deps from lockfiles/manifests<br>
+                            &bull; Reading <code>.env</code> and sending creds to their matching API<br>
+                            &bull; Read-only HTTP requests<br>
+                            &bull; Pushing to current branch or Claude-created branches
+                        </p>
+                    </div>
+                </div>
+
+                <h3>Enabling & Configuring</h3>
+
+                <div class="example-box">
+<strong>Enable auto mode:</strong>
+
+# Start with auto mode available in the Shift+Tab cycle
+claude --enable-auto-mode
+
+# Start directly in auto mode
+claude --permission-mode auto
+
+# View default classifier rules
+claude auto-mode defaults
+
+# Cycle modes during session:
+# Shift+Tab → default → acceptEdits → plan → auto → ...
+                </div>
+
+                <div class="example-box">
+<strong>Configure trusted infrastructure (managed settings):</strong>
+
+# In managed-settings.json (admin deploys):
+{
+  "autoMode": {
+    "environment": [
+      "Our GitHub org is acme-corp",
+      "Our S3 buckets are s3://acme-*",
+      "Internal registry: registry.acme-corp.com"
+    ],
+    "allow": [
+      "Push to any branch in acme-corp GitHub repos",
+      "Write to s3://acme-staging/"
+    ],
+    "soft_deny": [
+      "Production database migrations require manual approval"
+    ]
+  }
+}
+
+# Disable auto mode for the org
+{ "disableAutoMode": "disable" }
+
+# Use auto mode during plan mode (default: true)
+{ "useAutoModeDuringPlan": true }
+                </div>
+
+                <h3>Fallback Behavior</h3>
+
+                <div class="best-practices">
+                    <h3>When Auto Mode Pauses</h3>
+                    <ul>
+                        <li><span class="highlight">3 consecutive blocks</span> or <span class="highlight">20 total blocks</span> in one session triggers fallback to manual prompting</li>
+                        <li>Approving a prompted action <strong>resets</strong> the denial counters &mdash; auto mode resumes</li>
+                        <li>In non-interactive mode (<code>-p</code>), repeated blocks <strong>abort</strong> the session since there's no user to prompt</li>
+                        <li>Thresholds are <strong>not configurable</strong></li>
+                        <li>On entering auto mode, blanket allow rules like <code>Bash(*)</code> are temporarily dropped to ensure the classifier sees risky commands</li>
+                    </ul>
+                </div>
+
+                <div class="tip">
+                    <strong>Availability:</strong> Auto mode requires a <strong>Team plan</strong> (Enterprise/API rolling out) and <strong>Sonnet 4.6 or Opus 4.6</strong>. Not available on Haiku, claude-3, or third-party providers (Bedrock, Vertex, Foundry). Admins must enable it in <em>claude.ai &gt; Admin settings &gt; Claude Code</em>.
+                </div>
+            </section>
+
+            <!-- CHANNELS SECTION -->
+            <section id="channels">
+                <h2>Channels (Research Preview)</h2>
+                <p style="margin-bottom: 30px; color: var(--text-secondary); font-size: 1.1rem;">Channels are MCP servers that push events into your running Claude Code session from external sources &mdash; chat apps, webhooks, CI, monitoring. Claude reacts in real time while you're away from the terminal.</p>
+
+                <h3>How Channels Work</h3>
+
+                <div class="workflow-section" style="border-left-color: var(--accent-cyan);">
+                    <p style="margin-bottom: 15px; color: var(--text-secondary);">Unlike standard MCP (which Claude queries on demand), channels <strong>push</strong> events into your session. Code stays local. Events arrive as <code>&lt;channel source="name"&gt;</code> blocks in your conversation.</p>
+                    <div class="tool-grid">
+                        <div class="tool-card" style="border-left-color: var(--accent-cyan);">
+                            <h3 style="color: var(--accent-cyan);">One-Way</h3>
+                            <p>Forward alerts, webhooks, and monitoring events for Claude to act on.</p>
+                            <div class="usage">CI failures, deploy alerts, error tracking</div>
+                        </div>
+                        <div class="tool-card" style="border-left-color: var(--accent-amber);">
+                            <h3 style="color: var(--accent-amber);">Two-Way</h3>
+                            <p>Chat bridges that expose a <code>reply</code> tool so Claude can send messages back through the same channel.</p>
+                            <div class="usage">Telegram, Discord, iMessage</div>
+                        </div>
+                        <div class="tool-card" style="border-left-color: var(--accent-green);">
+                            <h3 style="color: var(--accent-green);">Permission Relay</h3>
+                            <p>Channel servers can forward permission prompts to your phone so you can approve/deny tool use remotely.</p>
+                            <div class="usage">Approve deploys from your phone</div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Supported Channel Plugins</h3>
+
+                <div class="tool-grid">
+                    <div class="tool-card" style="border-left-color: #0088cc;">
+                        <h3 style="color: #0088cc;">Telegram</h3>
+                        <p>Create a bot via BotFather, configure with <code>/telegram:configure &lt;token&gt;</code>, pair with a code. Sender allowlist enforced.</p>
+                        <div class="usage">/plugin install telegram@claude-plugins-official</div>
+                    </div>
+                    <div class="tool-card" style="border-left-color: #5865F2;">
+                        <h3 style="color: #5865F2;">Discord</h3>
+                        <p>Create a bot in Developer Portal, enable Message Content Intent, configure with <code>/discord:configure &lt;token&gt;</code>.</p>
+                        <div class="usage">/plugin install discord@claude-plugins-official</div>
+                    </div>
+                    <div class="tool-card" style="border-left-color: var(--accent-green);">
+                        <h3 style="color: var(--accent-green);">iMessage (macOS)</h3>
+                        <p>Reads Messages database directly, replies via AppleScript. No external service needed. Requires Full Disk Access.</p>
+                        <div class="usage">/plugin install imessage@claude-plugins-official</div>
+                    </div>
+                    <div class="tool-card" style="border-left-color: var(--text-tertiary);">
+                        <h3 style="color: var(--text-tertiary);">Fakechat (Demo)</h3>
+                        <p>Localhost chat UI for testing. No auth, no external service. Open <code>http://localhost:8787</code> after starting.</p>
+                        <div class="usage">/plugin install fakechat@claude-plugins-official</div>
+                    </div>
+                </div>
+
+                <h3>Quick Start</h3>
+
+                <div class="example-box">
+<strong>Install and run a channel (e.g., Telegram):</strong>
+
+# 1. Install the plugin
+/plugin install telegram@claude-plugins-official
+/reload-plugins
+
+# 2. Configure credentials
+/telegram:configure YOUR_BOT_TOKEN
+
+# 3. Restart with channels enabled
+claude --channels plugin:telegram@claude-plugins-official
+
+# 4. Pair your account (send any message to your bot in Telegram)
+/telegram:access pair &lt;code-from-bot&gt;
+/telegram:access policy allowlist
+
+# Multiple channels at once (space-separated):
+claude --channels plugin:telegram@claude-plugins-official plugin:discord@claude-plugins-official
+
+# Test with the fakechat demo first:
+claude --channels plugin:fakechat@claude-plugins-official
+# Then open http://localhost:8787 in your browser
+                </div>
+
+                <h3>Security Model</h3>
+
+                <div class="best-practices">
+                    <h3>Channel Security</h3>
+                    <ul>
+                        <li><span class="highlight">Sender allowlist:</span> Every channel plugin maintains an allowlist. Only paired/approved sender IDs can push messages; everyone else is silently dropped</li>
+                        <li><span class="highlight">Per-session opt-in:</span> Channels only activate when named in <code>--channels</code>. Being in <code>.mcp.json</code> alone is not enough</li>
+                        <li><span class="highlight">Permission relay trust:</span> Anyone on the allowlist who can reply through a channel can approve/deny tool use &mdash; only allowlist senders you trust with that authority</li>
+                        <li><span class="highlight">iMessage self-chat:</span> Texting yourself bypasses the gate automatically; add other contacts with <code>/imessage:access allow +15551234567</code></li>
+                    </ul>
+                </div>
+
+                <h3>Enterprise Controls</h3>
+
+                <div class="example-box">
+<strong>Managed settings for Team/Enterprise:</strong>
+
+# Channels are OFF by default on Team/Enterprise.
+# Admin must enable in claude.ai > Admin settings > Claude Code > Channels
+# Or in managed-settings.json:
+{
+  "channelsEnabled": true,
+
+  # Optional: restrict which plugins can register as channels
+  # (replaces the Anthropic default allowlist entirely)
+  "allowedChannelPlugins": [
+    { "marketplace": "claude-plugins-official", "plugin": "telegram" },
+    { "marketplace": "claude-plugins-official", "plugin": "discord" },
+    { "marketplace": "acme-corp-plugins", "plugin": "internal-alerts" }
+  ]
+}
+
+# Pro/Max users without an org: channels available, opt in with --channels
+                </div>
+
+                <h3>Channels vs Other Remote Features</h3>
+
+                <div class="command-list">
+                    <div class="command-item">
+                        <code>Channels</code>
+                        <p>Push events from external sources (chat apps, webhooks, CI) into your running local session. Claude reacts automatically.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>Remote Control</code>
+                        <p>Drive your local session from claude.ai or the Claude mobile app. You steer; Claude executes on your machine.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>Claude Code on the Web</code>
+                        <p>Runs tasks in a fresh cloud sandbox cloned from GitHub. Fully async &mdash; start and check back later.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>Claude in Slack</code>
+                        <p>Spawns a web session from an @Claude mention. Starts tasks from team conversation context.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>Standard MCP</code>
+                        <p>Claude queries on demand &mdash; nothing is pushed. For giving Claude read/query access to external systems.</p>
+                    </div>
+                </div>
+
+                <div class="tip">
+                    <strong>Build Your Own:</strong> You can build custom channels for any system. The <code>fakechat</code> demo is a good starting template. Use <code>--dangerously-load-development-channels</code> to test custom channels during the research preview. See <code>code.claude.com/docs/en/channels-reference</code> for the full protocol spec.
                 </div>
             </section>
 
