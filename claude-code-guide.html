@@ -631,6 +631,9 @@
             <a href="#quick-reference">Quick Reference</a>
             <a href="#long-running-agents">Long-Running</a>
             <a href="#advanced-tool-use">Advanced Tools</a>
+            <a href="#env-vars">Env Vars</a>
+            <a href="#plugins">Plugins</a>
+            <a href="#agent-teams">Agent Teams</a>
         </nav>
 
         <main>
@@ -2822,6 +2825,529 @@ Shift+Tab → Normal → Auto-Accept → Plan Mode → Normal...
 export CLAUDE_CODE_SIMPLE=1
 # Disables: skills, memory, agents, MCP, hooks, and CLAUDE.md
                     </div>
+                </div>
+            </section>
+
+            <!-- ENVIRONMENT VARIABLES & FEATURE FLAGS SECTION -->
+            <section id="env-vars">
+                <h2>Environment Variables & Feature Flags</h2>
+                <p style="margin-bottom: 30px; color: var(--text-secondary); font-size: 1.1rem;">Claude Code supports 90+ environment variables that control authentication, model selection, feature toggles, performance tuning, and more. Set them in your shell or in <code>settings.json</code> under the <code>env</code> key.</p>
+
+                <h3>Feature Flags &mdash; Disable Toggles</h3>
+                <p style="margin-bottom: 20px; color: var(--text-secondary);">Set any of these to <code>1</code> to turn off specific functionality. Useful for enterprise compliance, proxy compatibility, and stripping experimental features.</p>
+
+                <div class="command-list">
+                    <div class="command-item">
+                        <code>CLAUDE_CODE_DISABLE_1M_CONTEXT=1</code>
+                        <p>Disable the 1M extended context window. 1M model variants become unavailable in the model picker. Useful for compliance environments.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING=1</code>
+                        <p>Disable adaptive reasoning on Opus 4.6 and Sonnet 4.6. Falls back to fixed thinking budget controlled by <code>MAX_THINKING_TOKENS</code>.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>CLAUDE_CODE_DISABLE_AUTO_MEMORY=1</code>
+                        <p>Disable auto memory. Claude won't create or load memory files. Set to <code>0</code> to force enable during gradual rollout.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>CLAUDE_CODE_DISABLE_BACKGROUND_TASKS=1</code>
+                        <p>Disable all background tasks: <code>run_in_background</code> on Bash/subagents, auto-backgrounding, and Ctrl+B shortcut.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>CLAUDE_CODE_DISABLE_CRON=1</code>
+                        <p>Disable scheduled tasks. <code>/loop</code> and cron tools become unavailable, already-running tasks stop mid-session.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS=1</code>
+                        <p>Strip Anthropic-specific <code>anthropic-beta</code> headers from API requests. <strong>Critical</strong> for AWS Bedrock, Google Vertex, and third-party proxy/gateway compatibility.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>CLAUDE_CODE_DISABLE_FAST_MODE=1</code>
+                        <p>Disable fast mode (2.5x speed output). Prevents <code>/fast</code> toggle from working.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>CLAUDE_CODE_DISABLE_GIT_INSTRUCTIONS=1</code>
+                        <p>Remove built-in commit/PR workflow instructions and git status snapshot from the system prompt. Use when you have your own git workflow skills.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>CLAUDE_CODE_DISABLE_NONSTREAMING_FALLBACK=1</code>
+                        <p>Disable fallback to non-streaming when a streaming request fails mid-stream. Prevents duplicate tool execution behind proxies.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>CLAUDE_CODE_DISABLE_TERMINAL_TITLE=1</code>
+                        <p>Disable automatic terminal title updates based on conversation context.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY=1</code>
+                        <p>Disable "How is Claude doing?" session quality surveys.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1</code>
+                        <p>Composite flag: disables autoupdater, feedback command, error reporting, and telemetry in one shot.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>CLAUDE_CODE_SIMPLE=1</code>
+                        <p>Minimal mode: basic system prompt, only Bash + file read/edit tools. Disables hooks, skills, plugins, MCP auto-discovery, memory, and CLAUDE.md. Also set by <code>--bare</code> flag.</p>
+                    </div>
+                </div>
+
+                <h3>Feature Flags &mdash; Enable Toggles</h3>
+                <p style="margin-bottom: 20px; color: var(--text-secondary);">Opt in to experimental or gated features.</p>
+
+                <div class="command-list">
+                    <div class="command-item">
+                        <code>CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1</code>
+                        <p>Enable <strong>Agent Teams</strong> (experimental). Peer-to-peer agent communication via mailbox system with shared task lists.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>CLAUDE_CODE_USE_POWERSHELL_TOOL=1</code>
+                        <p>Enable the <strong>PowerShell tool</strong> on Windows (opt-in preview). Claude runs PowerShell natively instead of routing through Git Bash.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>CLAUDE_CODE_ENABLE_TASKS=true</code>
+                        <p>Enable the task tracking system in non-interactive (<code>-p</code>) mode. Tasks are already on by default in interactive mode.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>CLAUDE_CODE_ENABLE_TELEMETRY=1</code>
+                        <p>Enable OpenTelemetry data collection for metrics and logging. Required before configuring OTel exporters.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>ENABLE_TOOL_SEARCH=true</code>
+                        <p>Control MCP tool search (lazy loading). Values: <code>true</code> (always defer), <code>auto</code> (threshold mode), <code>auto:N</code> (custom threshold), <code>false</code> (load all upfront).</p>
+                    </div>
+                    <div class="command-item">
+                        <code>ENABLE_CLAUDEAI_MCP_SERVERS=false</code>
+                        <p>Opt out of claude.ai MCP servers in the CLI. Enabled by default for logged-in users.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>CLAUDE_CODE_ENABLE_PROMPT_SUGGESTION=false</code>
+                        <p>Disable prompt suggestions (grayed-out predictions after Claude responds).</p>
+                    </div>
+                    <div class="command-item">
+                        <code>CLAUDE_CODE_NEW_INIT=true</code>
+                        <p>Make <code>/init</code> run an interactive setup flow that asks which files to generate (CLAUDE.md, skills, hooks) before exploring the codebase.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>FORCE_AUTOUPDATE_PLUGINS=true</code>
+                        <p>Force plugin auto-updates even when <code>DISABLE_AUTOUPDATER</code> is set.</p>
+                    </div>
+                </div>
+
+                <h3>Model & Thinking Configuration</h3>
+
+                <div class="example-box">
+<strong>Model selection and override:</strong>
+
+# Override the default model
+export ANTHROPIC_MODEL=claude-opus-4-6
+
+# Pin specific model variants for each tier
+export ANTHROPIC_DEFAULT_OPUS_MODEL=claude-opus-4-6
+export ANTHROPIC_DEFAULT_SONNET_MODEL=claude-sonnet-4-6
+export ANTHROPIC_DEFAULT_HAIKU_MODEL=claude-haiku-4-5-20251001
+
+# Custom display names in /model picker
+export ANTHROPIC_DEFAULT_OPUS_MODEL_NAME="My Custom Opus"
+export ANTHROPIC_DEFAULT_OPUS_MODEL_DESCRIPTION="Opus via internal gateway"
+
+# Add a custom model entry to /model picker (for gateways/proxies)
+export ANTHROPIC_CUSTOM_MODEL_OPTION=my-gateway-model-id
+export ANTHROPIC_CUSTOM_MODEL_OPTION_NAME="Gateway Model"
+
+# Force a specific model for all subagent operations
+export CLAUDE_CODE_SUBAGENT_MODEL=claude-sonnet-4-6
+
+# Effort levels: low, medium, high, max (Opus only), auto
+export CLAUDE_CODE_EFFORT_LEVEL=high
+
+# Override extended thinking token budget (0 = disable)
+export MAX_THINKING_TOKENS=50000
+
+# Max output tokens per request
+export CLAUDE_CODE_MAX_OUTPUT_TOKENS=64000
+                </div>
+
+                <h3>Context & Compaction Control</h3>
+
+                <div class="example-box">
+<strong>Fine-tune when auto-compaction triggers:</strong>
+
+# Trigger compaction earlier (default: ~95%)
+export CLAUDE_AUTOCOMPACT_PCT_OVERRIDE=70
+
+# Treat a 1M context model as having a 500K window for compaction
+export CLAUDE_CODE_AUTO_COMPACT_WINDOW=500000
+
+# Override token limit for file reads
+export CLAUDE_CODE_FILE_READ_MAX_OUTPUT_TOKENS=20000
+                </div>
+
+                <h3>Shell & Bash Controls</h3>
+
+                <div class="example-box">
+<strong>Customize shell behavior:</strong>
+
+# Override shell detection (e.g., prefer zsh over detected bash)
+export CLAUDE_CODE_SHELL=/bin/zsh
+
+# Wrap all bash commands with a logger/auditor
+export CLAUDE_CODE_SHELL_PREFIX="/path/to/logger.sh"
+
+# Return to project root after each Bash command
+export CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR=1
+
+# Increase bash output limit (default: 30000 chars)
+export BASH_MAX_OUTPUT_LENGTH=100000
+
+# Default timeout for bash commands
+export BASH_DEFAULT_TIMEOUT_MS=300000
+
+# Path to shell script sourced before each Bash command
+# Great for persisting virtualenv/conda activation
+export CLAUDE_ENV_FILE=~/.claude/env_setup.sh
+
+# Detect if running inside a Claude-spawned shell
+if [ "$CLAUDECODE" = "1" ]; then
+  echo "Running inside Claude Code"
+fi
+                </div>
+
+                <h3>Security & Enterprise</h3>
+
+                <div class="example-box">
+<strong>Harden Claude Code for enterprise use:</strong>
+
+# Strip credentials from all subprocess environments
+# Prevents prompt injection from exfiltrating secrets
+export CLAUDE_CODE_SUBPROCESS_ENV_SCRUB=1
+
+# mTLS authentication
+export CLAUDE_CODE_CLIENT_CERT=/path/to/cert.pem
+export CLAUDE_CODE_CLIENT_KEY=/path/to/key.pem
+export CLAUDE_CODE_CLIENT_KEY_PASSPHRASE=secret
+
+# Let proxy handle DNS resolution
+export CLAUDE_CODE_PROXY_RESOLVES_HOSTS=true
+
+# Proxy configuration
+export HTTPS_PROXY=http://proxy.corp.com:8080
+export NO_PROXY=localhost,127.0.0.1,.internal.corp
+
+# Override streaming idle timeout (default: 90s)
+export CLAUDE_STREAM_IDLE_TIMEOUT_MS=120000
+
+# Demo mode (hide email/org in UI, skip onboarding)
+export IS_DEMO=true
+                </div>
+
+                <h3>Provider Routing (Bedrock / Vertex / Foundry)</h3>
+
+                <div class="example-box">
+<strong>Route API calls through cloud providers:</strong>
+
+# AWS Bedrock
+export CLAUDE_CODE_USE_BEDROCK=1
+export CLAUDE_CODE_SKIP_BEDROCK_AUTH=1    # when using an LLM gateway
+export AWS_BEARER_TOKEN_BEDROCK=your-key  # Bedrock API key auth
+
+# Google Vertex AI
+export CLAUDE_CODE_USE_VERTEX=1
+export CLAUDE_CODE_SKIP_VERTEX_AUTH=1
+export VERTEX_REGION_CLAUDE_4_1_OPUS=us-east5
+
+# Microsoft Foundry
+export CLAUDE_CODE_USE_FOUNDRY=1
+export ANTHROPIC_FOUNDRY_RESOURCE=my-resource
+export ANTHROPIC_FOUNDRY_API_KEY=your-key
+                </div>
+
+                <h3>MCP & Plugin Tuning</h3>
+
+                <div class="example-box">
+<strong>Fine-tune MCP and plugin behavior:</strong>
+
+# MCP server startup timeout (default varies)
+export MCP_TIMEOUT=30000
+
+# MCP tool execution timeout
+export MCP_TOOL_TIMEOUT=60000
+
+# Max tokens in MCP tool responses (default: 25000)
+export MAX_MCP_OUTPUT_TOKENS=50000
+
+# OAuth client secret for MCP servers
+export MCP_CLIENT_SECRET=your-secret
+export MCP_OAUTH_CALLBACK_PORT=8080
+
+# Plugin git operation timeout (default: 120s)
+export CLAUDE_CODE_PLUGIN_GIT_TIMEOUT_MS=180000
+
+# Pre-populated plugin seed directories (for container images)
+export CLAUDE_CODE_PLUGIN_SEED_DIR="/opt/plugins:/usr/share/claude-plugins"
+                </div>
+
+                <h3>Granular Disable Flags</h3>
+
+                <div class="example-box">
+<strong>Fine-grained control over individual subsystems:</strong>
+
+# Disable prompt caching (all models or per-model)
+export DISABLE_PROMPT_CACHING=1
+export DISABLE_PROMPT_CACHING_OPUS=1
+export DISABLE_PROMPT_CACHING_SONNET=1
+export DISABLE_PROMPT_CACHING_HAIKU=1
+
+# Disable cost warnings
+export DISABLE_COST_WARNINGS=1
+
+# Disable auto-updater
+export DISABLE_AUTOUPDATER=1
+
+# Opt out of error reporting
+export DISABLE_ERROR_REPORTING=1
+
+# Opt out of telemetry
+export DISABLE_TELEMETRY=1
+
+# Disable /feedback command
+export DISABLE_FEEDBACK_COMMAND=1
+
+# Disable installation checks
+export DISABLE_INSTALLATION_CHECKS=1
+
+# Skip IDE extension auto-install
+export CLAUDE_CODE_IDE_SKIP_AUTO_INSTALL=1
+                </div>
+
+                <h3>Setting Env Vars in settings.json</h3>
+
+                <div class="example-box">
+<strong>Apply env vars to every session (team-wide or personal):</strong>
+
+# In ~/.claude/settings.json (user scope) or
+# .claude/settings.json (project scope, committed to git):
+{
+  "env": {
+    "CLAUDE_CODE_EFFORT_LEVEL": "high",
+    "CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS": "1",
+    "CLAUDE_CODE_SUBPROCESS_ENV_SCRUB": "1",
+    "BASH_MAX_OUTPUT_LENGTH": "100000",
+    "MCP_TIMEOUT": "30000"
+  }
+}
+
+# Variables in settings.json override shell-exported values
+# Use .claude/settings.local.json for personal overrides (gitignored)
+                </div>
+
+                <div class="tip">
+                    <strong>Full Reference:</strong> The canonical list of 90+ environment variables lives at <code>code.claude.com/docs/en/env-vars</code>. The variables above represent the most impactful feature flags and configuration knobs. Many additional variables exist for Vertex region overrides, OTEL configuration, and internal tuning.
+                </div>
+            </section>
+
+            <!-- PLUGINS SECTION -->
+            <section id="plugins">
+                <h2>Plugins</h2>
+                <p style="margin-bottom: 30px; color: var(--text-secondary); font-size: 1.1rem;">Plugins are reusable packages that add skills, agents, hooks, MCP servers, and LSP configurations to Claude Code. Install from marketplaces or create your own.</p>
+
+                <h3>Managing Plugins</h3>
+
+                <div class="example-box">
+<strong>CLI commands for plugin management:</strong>
+
+# Install a plugin from a marketplace
+claude plugin install code-review
+
+# List installed plugins
+claude plugin list
+
+# Enable/disable a plugin
+claude plugin enable code-review
+claude plugin disable code-review
+
+# Remove a plugin
+claude plugin remove code-review
+
+# View available plugins from configured marketplaces
+claude plugin search
+
+# Update all plugins
+claude plugin update
+                </div>
+
+                <h3>Plugin Architecture</h3>
+
+                <div class="command-list">
+                    <div class="command-item">
+                        <code>manifest.json</code>
+                        <p>Declares plugin name, description, version, and what it provides (skills, agents, hooks, MCP servers, LSP configs).</p>
+                    </div>
+                    <div class="command-item">
+                        <code>CLAUDE_PLUGIN_ROOT</code>
+                        <p>Env var pointing to the plugin's install directory. Use to reference bundled scripts and config files.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>CLAUDE_PLUGIN_DATA</code>
+                        <p>Persistent data directory that survives plugin updates. Store state and caches here.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>manifest.userConfig</code>
+                        <p>Plugins can declare configuration options. Users set values at enable time; stored securely in keychain.</p>
+                    </div>
+                </div>
+
+                <h3>Plugin Marketplaces</h3>
+
+                <div class="best-practices">
+                    <h3>Enterprise Plugin Control</h3>
+                    <ul>
+                        <li><span class="highlight">Official marketplace:</span> Anthropic's curated marketplace is the default source</li>
+                        <li><span class="highlight">Custom marketplaces:</span> Point to your own git repos with plugin collections</li>
+                        <li><span class="highlight">Managed allowlists:</span> Use <code>strictKnownMarketplaces</code> and <code>blockedMarketplaces</code> in managed settings</li>
+                        <li><span class="highlight">Git subdirectory source:</span> Plugins can point to a subdirectory within a larger git repo</li>
+                        <li><span class="highlight">Seed directories:</span> Pre-populate plugins in container images with <code>CLAUDE_CODE_PLUGIN_SEED_DIR</code></li>
+                    </ul>
+                </div>
+
+                <div class="tip">
+                    <strong>Desktop Install:</strong> The Claude Code desktop app lets you browse and install plugins without using the terminal. Plugins from configured marketplaces (including the official Anthropic marketplace) appear in a visual browser.
+                </div>
+            </section>
+
+            <!-- AGENT TEAMS SECTION -->
+            <section id="agent-teams">
+                <h2>Agent Teams (Experimental)</h2>
+                <p style="margin-bottom: 30px; color: var(--text-secondary); font-size: 1.1rem;">Agent Teams enable peer-to-peer communication between multiple Claude instances working on the same codebase. Teammates coordinate via a mailbox system and shared task lists.</p>
+
+                <div class="example-box">
+<strong>Enable agent teams:</strong>
+
+# Set the environment variable
+export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
+
+# Or in settings.json:
+{ "env": { "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1" } }
+
+# Display modes (in settings.json):
+{ "teammateMode": "auto" }   # auto-detect best display
+{ "teammateMode": "tmux" }   # each teammate in a tmux pane
+{ "teammateMode": "in-process" }  # all in one process
+                </div>
+
+                <h3>How Teams Work</h3>
+
+                <div class="command-list">
+                    <div class="command-item">
+                        <code>Mailbox System</code>
+                        <p>Teammates communicate via a mailbox. Send messages with <code>Shift+Down</code> to navigate between teammates.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>Shared Task List</code>
+                        <p>Coordinate work via <code>CLAUDE_CODE_TASK_LIST_ID</code>. Set the same ID across instances to share tasks.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>Plan Approval</code>
+                        <p>Require teammates to get plan approval before executing: <code>CLAUDE_CODE_PLAN_MODE_REQUIRED=true</code> (auto-set by the lead).</p>
+                    </div>
+                    <div class="command-item">
+                        <code>TeammateIdle / TaskCompleted</code>
+                        <p>Hook events that fire when teammates finish work. Supports <code>continue: false</code> with <code>stopReason</code>.</p>
+                    </div>
+                </div>
+
+                <h3>New Hook Events (2026)</h3>
+                <p style="margin-bottom: 20px; color: var(--text-secondary);">Recent releases added several new lifecycle hook events beyond the original set:</p>
+
+                <div class="command-list">
+                    <div class="command-item">
+                        <code>StopFailure</code>
+                        <p>Fires when a turn ends due to an API error (not a normal stop). Use for alerting and retry logic.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>CwdChanged</code>
+                        <p>Fires when the working directory changes. Use to activate virtualenvs, switch tool configs, or update environment.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>FileChanged</code>
+                        <p>Fires when a watched file changes. Reactive environment management.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>ConfigChange</code>
+                        <p>Fires when config files change. Useful for enterprise auditing.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>InstructionsLoaded</code>
+                        <p>Fires when CLAUDE.md or rules files are loaded into context.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>PostCompact</code>
+                        <p>Fires after compaction completes. Use to re-inject critical context.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>WorktreeCreate / WorktreeRemove</code>
+                        <p>Fires on worktree lifecycle events. Custom VCS setup and teardown.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>Elicitation / ElicitationResult</code>
+                        <p>MCP elicitation hooks. Intercept and override interactive MCP dialog responses.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>TaskCreated</code>
+                        <p>Fires when a task is created via <code>TaskCreate</code>.</p>
+                    </div>
+                </div>
+
+                <h3>New Hook Handler Types</h3>
+
+                <div class="tool-grid">
+                    <div class="tool-card" style="border-left-color: var(--accent-cyan);">
+                        <h3 style="color: var(--accent-cyan);">Conditional Hooks</h3>
+                        <p>Hooks now support an <code>if</code> field using permission rule syntax. Example: only fire on <code>Bash(git *)</code> commands.</p>
+                        <div class="usage">{ "if": "Bash(git *)", "command": "..." }</div>
+                    </div>
+                    <div class="tool-card" style="border-left-color: var(--accent-amber);">
+                        <h3 style="color: var(--accent-amber);">HTTP Hooks</h3>
+                        <p>POST JSON to a URL instead of running shell commands. Enterprise-friendly for webhook integrations.</p>
+                        <div class="usage">{ "type": "http", "url": "https://..." }</div>
+                    </div>
+                    <div class="tool-card" style="border-left-color: var(--accent-green);">
+                        <h3 style="color: var(--accent-green);">Agent Hooks</h3>
+                        <p>Spawn a subagent with full tool access for deep analysis before approving/blocking actions.</p>
+                        <div class="usage">{ "type": "agent", "prompt": "..." }</div>
+                    </div>
+                </div>
+
+                <h3>New CLI Flags (2026)</h3>
+
+                <div class="command-list">
+                    <div class="command-item">
+                        <code>--bare</code>
+                        <p>Skip hooks, LSP, plugins, skills, MCP auto-discovery for fast startup. Requires <code>ANTHROPIC_API_KEY</code>. Sets <code>CLAUDE_CODE_SIMPLE=1</code>.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>--worktree (-w)</code>
+                        <p>Start Claude in an isolated git worktree with sparse checkout support. Each session gets its own copy of the code.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>--channels</code>
+                        <p>Enable channel permission relay. Channel servers can forward tool approval prompts to your phone (research preview).</p>
+                    </div>
+                    <div class="command-item">
+                        <code>-n, --name &lt;name&gt;</code>
+                        <p>Set a display name for the session at startup.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>claude auth login --console</code>
+                        <p>Authenticate via Anthropic Console (API billing) instead of claude.ai subscription.</p>
+                    </div>
+                    <div class="command-item">
+                        <code>claude agents</code>
+                        <p>List all configured agents (built-in and custom).</p>
+                    </div>
+                </div>
+
+                <div class="tip">
+                    <strong>What's New in 2026:</strong> Claude Code has evolved from a coding assistant into a full agent platform. Key additions: Plugins, Agent Teams, Remote Control (bridge local sessions to mobile), <code>/loop</code> for scheduled tasks, Computer Use (Pro/Max), Cowork in Desktop, Sandbox for OS-level bash isolation, PowerShell tool (Windows), Voice STT in 20 languages, and the <code>--bare</code> flag for fast scripted usage.
                 </div>
             </section>
 
